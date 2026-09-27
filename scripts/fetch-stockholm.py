@@ -76,7 +76,7 @@ def boundaries():
         features.append({'type': 'Feature', 'properties': {'municipalityCode': code}, 'geometry': mapping(geom)})
     county = unary_union([shape(f['geometry']) for f in features])
     west, south, east, north = county.bounds
-    if not (17 < west < east < 20 and 58 < south < north < 61):
+    if not (17 < west < east < 20.5 and 58 < south < north < 61):
         raise ValueError(f'Unexpected county bounds {county.bounds}')
     save(DATA / 'municipalities.geojson', {'type': 'FeatureCollection', 'features': features})
     save(DATA / 'boundary.geojson', {'type': 'FeatureCollection', 'features': [
