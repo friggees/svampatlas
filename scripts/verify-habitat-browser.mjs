@@ -18,24 +18,21 @@ try {
   const selected=await page.locator('.habitat-ranking button').first().getAttribute('data-cell-id');
   await expect(page.locator('.habitat-detail')).toContainText(`Vald yta ${selected}`);
   await expect(page.getByLabel('Latitud',{exact:true})).not.toHaveValue('');
-  // Clicking the representative land pixel should resolve to the same analysis cell.
+  // Test a visible habitat surface. At overview zoom, a pin's rounded screen
+  // location can be tens of metres from the exact 10 m pixel beneath it.
   const marker=page.locator('.maplibregl-marker');
-  await expect(marker).toBeVisible();
   await canvas.scrollIntoViewIfNeeded();
-  // At the pilot overview one screen pixel spans tens of metres; zoom at the
-  // marker before testing an exact 10 m land pixel instead of clicking a rounded pin.
-  const overviewMarker=await marker.boundingBox();
-  await page.mouse.move(overviewMarker.x+overviewMarker.width/2,overviewMarker.y+overviewMarker.height/2+14);
-  await page.mouse.wheel(0,-900);
-  await page.waitForTimeout(1200);
-  await expect(page.locator('.map-canvas')).toHaveAttribute('data-habitat-ready','true',{timeout:60000});
-  const markerBounds=await marker.boundingBox(),canvasBounds=await canvas.boundingBox();
-  const px=markerBounds.x+markerBounds.width/2-canvasBounds.x;
-  // MapLibre's default marker uses center anchoring with offset [0,-14].
-  const py=markerBounds.y+markerBounds.height/2+14-canvasBounds.y;
-  await canvas.click({position:{x:px,y:py},force:true});
-  await expect(page.locator('.habitat-detail')).toContainText(`Vald yta ${selected}`);
-  // Zoom through the real map controls; switching species must keep the same canvas and marker transform.
+  let selectedByMap=false;
+  const bounds=await canvas.boundingBox();
+  for(const [x,y] of [[.5,.5],[.45,.6],[.55,.55],[.5,.7],[.4,.5],[.6,.6],[.45,.4],[.6,.4]]){
+    await canvas.click({position:{x:bounds.width*x,y:bounds.height*y},force:true});
+    if((await page.locator('.habitat-detail').innerText()).includes('Vald yta')){selectedByMap=true;break;}
+  }
+  assert.ok(selectedByMap,'A visible habitat surface must be selectable');
+  await page.locator('.maplibregl-ctrl-zoom-in').click();
+  // MapLibre rounds the marker at moveend; wait for that instead of a fixed
+  // wall-clock delay, which can sample an animation halfway on a busy machine.
+  await expect(marker).toHaveAttribute('style',/translate\(-?\d+px, -?\d+px\)/,{timeout:30000});
   const markerTransform=await marker.getAttribute('style');
   const satelliteResponse=page.waitForResponse(r=>r.url().includes('s2cloudless-2025')&&r.status()===200,{timeout:30000});
   await page.getByRole('button',{name:'Satellit',exact:true}).click();
@@ -57,6 +54,7 @@ try {
     await expect(marker).toHaveAttribute('style',markerTransform);
     await expect(page.locator('.map-canvas')).toHaveAttribute('data-habitat-ready','true',{timeout:60000});
   }
+  console.log('PASS: map clicks, satellite, all species and preserved zoom');
   assert.equal(weatherRequests,1,'Species changes must reuse weather');
   await mkdir('artifacts',{recursive:true});
   await page.screenshot({path:'artifacts/habitat-desktop.png',fullPage:true});

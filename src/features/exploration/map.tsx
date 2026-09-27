@@ -12,10 +12,9 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
   const selectArea=useRef(onSelectArea);
   useEffect(()=>{selectArea.current=onSelectArea;},[onSelectArea]);
   const [loaded,setLoaded]=useState(false);
-  const [sourceReady,setSourceReady]=useState(false);
+  const [renderedHabitat,setRenderedHabitat]=useState<FeatureCollection|null>(null);
+  const sourceReady=renderedHabitat===habitat;
   const [satellite,setSatellite]=useState(false),[showHabitat,setShowHabitat]=useState(true),[satelliteError,setSatelliteError]=useState(false);
-  const visibleHabitat=useRef(showHabitat);
-  useEffect(()=>{visibleHabitat.current=showHabitat;},[showHabitat]);
   const fillOpacity=useRef(0.65);
   useEffect(()=>{fillOpacity.current=satellite?0.4:0.65;},[satellite]);
   const [error,setError]=useState(false);
@@ -28,15 +27,6 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
       map.current=instance;
       instance.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
       instance.on('error',event=>{if('sourceId' in event&&event.sourceId==='satellite')setSatelliteError(true);else setError(true);});
-      instance.on('dataloading',event=>{if(event.dataType==='source'&&event.sourceId==='habitat')setSourceReady(false);});
-      instance.on('sourcedata',event=>{
-        if(event.sourceId==='habitat'&&event.isSourceLoaded){
-          if(instance.getLayer('habitat-fill'))instance.setPaintProperty('habitat-fill','fill-opacity',fillOpacity.current);
-          if(instance.getLayer('habitat-best'))instance.setPaintProperty('habitat-best','line-opacity',0.65);
-          if(instance.getLayer('habitat-selected'))instance.setPaintProperty('habitat-selected','line-opacity',1);
-          setSourceReady(true);
-        }
-      });
       instance.on('load',()=>{
         instance.addSource('pilot',{type:'geojson',data:boundary});
         instance.addLayer({id:'pilot-fill',type:'fill',source:'pilot',paint:{'fill-color':'#547356','fill-opacity':0.055}});
@@ -61,12 +51,31 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
   },[boundary,bbox]);
   useEffect(()=>{
     if(!loaded)return;
-    const source=map.current?.getSource('habitat') as maplibregl.GeoJSONSource|undefined;
+    const instance=map.current;
+    const source=instance?.getSource('habitat') as maplibregl.GeoJSONSource|undefined;
+    let active=true;
+    const finish=()=>{
+      if(active&&instance?.isSourceLoaded('habitat')){
+        setRenderedHabitat(habitat);
+        instance.off('render',finish);
+      }
+    };
     // Transparent paint keeps source loading active; hidden layout would stop tile preparation.
     map.current?.setPaintProperty('habitat-fill','fill-opacity',0);
     map.current?.setPaintProperty('habitat-best','line-opacity',0);
     map.current?.setPaintProperty('habitat-selected','line-opacity',0);
-    source?.setData(habitat??{type:'FeatureCollection',features:[]});
+    // MapLibre 6 setData resolves once the worker has processed the current data.
+    // Updating paint inside sourcedata would itself emit more source events.
+    void source?.setData(habitat??{type:'FeatureCollection',features:[]}).then(()=>{
+      if(!active||!instance)return;
+      instance.setPaintProperty('habitat-fill','fill-opacity',fillOpacity.current);
+      instance.setPaintProperty('habitat-best','line-opacity',0.65);
+      instance.setPaintProperty('habitat-selected','line-opacity',1);
+      // Indexing is complete, but viewport tiles still need to render.
+      instance.on('render',finish);
+      finish();
+    }).catch(()=>{if(active)setError(true);});
+    return()=>{active=false;instance?.off('render',finish);};
   },[habitat,loaded]);
   useEffect(()=>{
     if(!loaded)return;
