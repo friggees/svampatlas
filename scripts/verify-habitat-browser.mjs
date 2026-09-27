@@ -7,7 +7,7 @@ try {
   const page=await browser.newPage({viewport:{width:1440,height:1100}});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   let weatherRequests=0;page.on('request',r=>{if(r.url().endsWith('/api/weather'))weatherRequests++;});
-  await page.goto(base);
+  await page.goto(`${base}/botkyrka`);
   await page.getByRole('button',{name:'Utforska området',exact:true}).click();
   await expect(page.locator('.habitat-ranking button').first()).toBeVisible({timeout:60000});
   await expect(page.locator('.weather-score strong')).toHaveText(/^\d{1,3}$/,{timeout:30000});

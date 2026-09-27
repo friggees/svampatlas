@@ -25,3 +25,9 @@
 .map-view-controls input{accent-color:#365443;height:16px!important;width:16px}
 .map-container .map-notice{top:100px;z-index:3}
 @media(max-width:700px){.habitat-section{padding:18px}.habitat-layout{grid-template-columns:1fr;gap:18px}}
+
+.municipality-select{width:100%;min-width:0;height:44px;border:1px solid #dce2d7;border-radius:8px;padding:0 10px;background:#f7f9f3;color:#294936;font-size:14px}
+.county-panel{margin:28px 0;padding:25px;background:#fff;border:1px solid #dce2d7;border-radius:16px;line-height:1.65;min-width:0}
+.county-panel h2{font-size:25px;margin:8px 0 14px}.county-panel p{margin:12px 0}.county-panel a{text-decoration:underline;text-underline-offset:3px;color:#365b43}
+.county-detail{padding:12px 18px;background:#f1f5e9;border-radius:10px}.county-legend-dot{display:inline-block;width:12px;height:12px;border-radius:3px;background:#38805a;margin-right:6px}
+@media(max-width:500px){.county-panel{padding:18px}.county-panel h2{font-size:23px}}

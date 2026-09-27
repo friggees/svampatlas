@@ -4,16 +4,21 @@ import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type {FeatureCollection,Polygon,MultiPolygon} from 'geojson';
 import type {Point} from './domain';
-type Props={boundary:FeatureCollection<Polygon|MultiPolygon>;bbox:number[];point:Point|null;onSelect:(point:Point)=>void;habitat:FeatureCollection|null;selectedId:string|null;onSelectArea:(id:string)=>void};
-export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedId,onSelectArea}:Props) {
+import type {SpeciesId} from '../species/catalog';
+import {habitatProfiles} from './habitat-profiles';
+type Props={boundary:FeatureCollection<Polygon|MultiPolygon>;bbox:number[];point:Point|null;onSelect:(point:Point)=>void;habitat:FeatureCollection|null;selectedId:string|null;onSelectArea:(id:string)=>void;countyMode?:boolean;countySpecies?:SpeciesId;onSelectCounty?:(code:number|null)=>void;focusBounds?:number[]};
+export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedId,onSelectArea,countyMode=false,countySpecies,onSelectCounty,focusBounds}:Props) {
   const container=useRef<HTMLDivElement>(null), map=useRef<maplibregl.Map|null>(null), marker=useRef<maplibregl.Marker|null>(null);
   const select=useRef(onSelect);
   useEffect(()=>{select.current=onSelect;},[onSelect]);
   const selectArea=useRef(onSelectArea);
   useEffect(()=>{selectArea.current=onSelectArea;},[onSelectArea]);
+  const countySelect=useRef(onSelectCounty);
+  useEffect(()=>{countySelect.current=onSelectCounty;},[onSelectCounty]);
+  const [countyReady,setCountyReady]=useState(false);
   const [loaded,setLoaded]=useState(false);
   const [renderedHabitat,setRenderedHabitat]=useState<FeatureCollection|null>(null);
-  const sourceReady=renderedHabitat===habitat;
+  const sourceReady=countyMode?(!countySpecies||countyReady):renderedHabitat===habitat;
   const [satellite,setSatellite]=useState(false),[showHabitat,setShowHabitat]=useState(true),[satelliteError,setSatelliteError]=useState(false);
   const fillOpacity=useRef(0.65);
   useEffect(()=>{fillOpacity.current=satellite?0.4:0.65;},[satellite]);
@@ -23,7 +28,7 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
     let instance:maplibregl.Map;
     try {
       maplibregl.setWorkerUrl('/maplibre/maplibre-gl-worker.mjs');
-      instance=new maplibregl.Map({container:container.current,style:{version:8,sources:{osm:{type:'raster',tiles:[process.env.NEXT_PUBLIC_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}},layers:[{id:'base',type:'raster',source:'osm',paint:{'raster-saturation':-0.55,'raster-opacity':0.9}}]},bounds:[[bbox[0],bbox[1]],[bbox[2],bbox[3]]],fitBoundsOptions:{padding:35},maxZoom:17,minZoom:8});
+      instance=new maplibregl.Map({container:container.current,style:{version:8,sources:{osm:{type:'raster',tiles:[process.env.NEXT_PUBLIC_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}},layers:[{id:'base',type:'raster',source:'osm',paint:{'raster-saturation':-0.55,'raster-opacity':0.9}}]},bounds:[[bbox[0],bbox[1]],[bbox[2],bbox[3]]],fitBoundsOptions:{padding:35},maxZoom:17,minZoom:countyMode?6:8});
       map.current=instance;
       instance.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
       instance.on('error',event=>{if('sourceId' in event&&event.sourceId==='satellite')setSatelliteError(true);else setError(true);});
@@ -35,9 +40,21 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
         instance.addLayer({id:'habitat-fill',type:'fill',source:'habitat',paint:{'fill-color':['step',['get','score'],'#909896',0,'#c6a458',40,'#88ac69',70,'#26724d'],'fill-opacity':0.65}});
         instance.addLayer({id:'habitat-best',type:'line',source:'habitat',filter:['==',['get','best'],true],paint:{'line-color':'#174b36','line-width':0.6,'line-opacity':0.65}});
         instance.addLayer({id:'habitat-selected',type:'line',source:'habitat',filter:['==',['get','cellId'],''],paint:{'line-color':'#2462b5','line-width':3}});
+        if(countyMode){
+          instance.addSource('county-habitat',{type:'vector',tiles:[`${window.location.origin}/data/stockholm/{z}/{x}/{y}.pbf`],minzoom:7,maxzoom:11,bounds:bbox as [number,number,number,number],attribution:'Habitat: NMD2023 · © OpenStreetMap contributors · SCB · <a href="/om#stockholm">Metod &amp; ODbL</a>'});
+          instance.addLayer({id:'county-habitat-fill',type:'fill',source:'county-habitat','source-layer':'habitat',layout:{visibility:'none'},paint:{'fill-color':'#38805a','fill-opacity':0.55}});
+          instance.on('sourcedataloading',event=>{if(event.sourceId==='county-habitat')setCountyReady(false);});
+          instance.on('sourcedata',event=>{if(event.sourceId==='county-habitat'&&instance.isSourceLoaded('county-habitat'))setCountyReady(true);});
+        }
         setLoaded(true);
       });
       instance.on('click',event=>{
+        if(countyMode){
+          const feature=instance.getLayer('county-habitat-fill')?instance.queryRenderedFeatures(event.point,{layers:['county-habitat-fill']})[0]:null;
+          select.current({longitude:event.lngLat.lng,latitude:event.lngLat.lat});
+          countySelect.current?.(feature?Number(feature.properties.code):null);
+          return;
+        }
         const feature=instance.getLayer('habitat-fill')?instance.queryRenderedFeatures(event.point,{layers:['habitat-fill']})[0]:null;
         if(feature?.properties?.cellId)selectArea.current(String(feature.properties.cellId));
         else select.current({longitude:event.lngLat.lng,latitude:event.lngLat.lat});
@@ -48,7 +65,7 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
       setError(true); return;
     }
     return ()=>{marker.current?.remove();marker.current=null;instance.remove();map.current=null;};
-  },[boundary,bbox]);
+  },[boundary,bbox,countyMode]);
   useEffect(()=>{
     if(!loaded)return;
     const instance=map.current;
@@ -92,6 +109,7 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
     if(instance.getLayer('satellite-base'))instance.setLayoutProperty('satellite-base','visibility',satellite?'visible':'none');
     instance.setLayoutProperty('base','visibility',satellite?'none':'visible');
     instance.setPaintProperty('habitat-fill','fill-opacity',satellite?0.4:0.65);
+    if(instance.getLayer('county-habitat-fill'))instance.setPaintProperty('county-habitat-fill','fill-opacity',satellite?0.4:0.55);
   },[satellite,loaded]);
   useEffect(()=>{
     if(loaded)map.current?.setFilter('habitat-selected',['==',['get','cellId'],selectedId??'']);
@@ -101,8 +119,17 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
     marker.current?.remove();
     marker.current=new maplibregl.Marker({color:'#365443'}).setLngLat([point.longitude,point.latitude]).addTo(map.current);
   },[point]);
-  return <div className="map-container"><div ref={container} className="map-canvas" data-habitat-ready={sourceReady} data-basemap={satellite?'satellite':'map'} aria-busy={!!habitat&&!sourceReady} aria-label="Interaktiv karta över Botkyrka. Välj en punkt genom att klicka, eller använd koordinatformuläret."/>
-    <div className="map-view-controls"><div role="group" aria-label="Kartbakgrund"><button type="button" aria-pressed={!satellite} onClick={()=>setSatellite(false)}>Karta</button><button type="button" aria-pressed={satellite} onClick={()=>{setSatelliteError(false);setSatellite(true);}}>Satellit</button></div>{habitat?<label><input type="checkbox" checked={showHabitat} onChange={e=>setShowHabitat(e.target.checked)}/> Visa habitatytor</label>:null}</div>
-    {error?<div className="map-notice" role="status">Kartan kunde inte laddas helt. Du kan fortfarande ange koordinater i formuläret.</div>:satellite&&satelliteError?<div className="map-notice" role="status">Satellitbilden kunde inte laddas. Välj Karta för vanlig kartbakgrund.</div>:habitat&&!sourceReady?<div className="map-notice" role="status">Ritar artens markytor…</div>:null}
-    <div className="map-legend"><span className="legend-line"/> {satellite?'Satellit 2024–2025 · 10 m/pixel · inte live':'Pilotområde · SCB RegSO 2025'}</div></div>;
+  useEffect(()=>{
+    const instance=map.current;
+    if(!loaded||!instance||!countyMode)return;
+    instance.setFilter('county-habitat-fill',countySpecies?['in',['get','code'],['literal',habitatProfiles[countySpecies].codes]]:['==',['get','code'],-1]);
+    instance.setLayoutProperty('county-habitat-fill','visibility',countySpecies&&showHabitat?'visible':'none');
+  },[loaded,countyMode,countySpecies,showHabitat]);
+  useEffect(()=>{
+    if(loaded&&focusBounds)map.current?.fitBounds([[focusBounds[0],focusBounds[1]],[focusBounds[2],focusBounds[3]]],{padding:30,duration:500});
+  },[loaded,focusBounds]);
+  return <div className="map-container"><div ref={container} className="map-canvas" data-habitat-ready={sourceReady} data-species={countySpecies} data-region={countyMode?'stockholm':'botkyrka'} data-basemap={satellite?'satellite':'map'} aria-busy={(!!habitat||!!countySpecies)&&!sourceReady} aria-label={`Interaktiv karta över ${countyMode?'Stockholms län':'Botkyrka'}. Välj en punkt genom att klicka, eller använd koordinatformuläret.`}/>
+    <div className="map-view-controls"><div role="group" aria-label="Kartbakgrund"><button type="button" aria-pressed={!satellite} onClick={()=>setSatellite(false)}>Karta</button><button type="button" aria-pressed={satellite} onClick={()=>{setSatelliteError(false);setSatellite(true);}}>Satellit</button></div>{habitat||countySpecies?<label><input type="checkbox" checked={showHabitat} onChange={e=>setShowHabitat(e.target.checked)}/> Visa habitatytor</label>:null}</div>
+    {error?<div className="map-notice" role="status">Kartan kunde inte laddas helt. Du kan fortfarande ange koordinater i formuläret.</div>:satellite&&satelliteError?<div className="map-notice" role="status">Satellitbilden kunde inte laddas. Välj Karta för vanlig kartbakgrund.</div>:(habitat||countySpecies)&&!sourceReady?<div className="map-notice" role="status">Ritar artens markytor…</div>:null}
+    <div className="map-legend"><span className="legend-line"/> {satellite?'Satellit 2024–2025 · 10 m/pixel · inte live':countyMode?'Stockholms län · markstöd, inte fyndprognos':'Pilotområde · SCB RegSO 2025'}</div></div>;
 }
