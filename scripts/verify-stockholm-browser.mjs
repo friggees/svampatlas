@@ -11,7 +11,9 @@ try{
   page.on('response',r=>{if(r.url().endsWith('.pbf')){tiles++;if(!r.ok())tileFailures.push(r.status());}});
   await page.goto(base);
   await expect(page.getByRole('combobox',{name:'Område'}).locator('option')).toHaveCount(27);
+  const firstTile=page.waitForResponse(r=>r.url().endsWith('.pbf')&&r.ok());
   await page.getByRole('button',{name:'Utforska området',exact:true}).click();
+  await firstTile;
   await expect(page.locator('.map-canvas')).toHaveAttribute('data-region','stockholm');
   await expect(page.locator('.map-canvas')).toHaveAttribute('data-habitat-ready','true',{timeout:60000});
   const canvas=page.locator('.map-canvas canvas');
@@ -25,11 +27,14 @@ try{
   }
   for(const code of ['0188','0192','0127','0180']){
     await page.getByRole('combobox',{name:'Område'}).selectOption(code);
+    await expect(page.locator('.map-canvas')).toHaveAttribute('data-moving','false');
     await expect(page.locator('.map-canvas')).toHaveAttribute('data-habitat-ready','true',{timeout:60000});
     await expect(canvas).toHaveAttribute('data-test-identity','county-persistent');
   }
   await page.getByRole('combobox',{name:'Område'}).selectOption('0127');
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-moving','false');
   await page.locator('.maplibregl-ctrl-zoom-in').click();
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-moving','false');
   await expect(page.locator('.map-canvas')).toHaveAttribute('data-habitat-ready','true',{timeout:60000});
   await canvas.scrollIntoViewIfNeeded();
   const bounds=await canvas.boundingBox();let clicked=false;

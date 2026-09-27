@@ -30,6 +30,8 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
       maplibregl.setWorkerUrl('/maplibre/maplibre-gl-worker.mjs');
       instance=new maplibregl.Map({container:container.current,style:{version:8,sources:{osm:{type:'raster',tiles:[process.env.NEXT_PUBLIC_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}},layers:[{id:'base',type:'raster',source:'osm',paint:{'raster-saturation':-0.55,'raster-opacity':0.9}}]},bounds:[[bbox[0],bbox[1]],[bbox[2],bbox[3]]],fitBoundsOptions:{padding:35},maxZoom:17,minZoom:countyMode?6:8});
       map.current=instance;
+      instance.on('movestart',()=>container.current?.setAttribute('data-moving','true'));
+      instance.on('moveend',()=>container.current?.setAttribute('data-moving','false'));
       instance.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
       instance.on('error',event=>{if('sourceId' in event&&event.sourceId==='satellite')setSatelliteError(true);else setError(true);});
       instance.on('load',()=>{
@@ -128,7 +130,7 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
   useEffect(()=>{
     if(loaded&&focusBounds)map.current?.fitBounds([[focusBounds[0],focusBounds[1]],[focusBounds[2],focusBounds[3]]],{padding:30,duration:500});
   },[loaded,focusBounds]);
-  return <div className="map-container"><div ref={container} className="map-canvas" data-habitat-ready={sourceReady} data-species={countySpecies} data-region={countyMode?'stockholm':'botkyrka'} data-basemap={satellite?'satellite':'map'} aria-busy={(!!habitat||!!countySpecies)&&!sourceReady} aria-label={`Interaktiv karta över ${countyMode?'Stockholms län':'Botkyrka'}. Välj en punkt genom att klicka, eller använd koordinatformuläret.`}/>
+  return <div className="map-container"><div ref={container} className="map-canvas" data-moving="false" data-habitat-ready={sourceReady} data-species={countySpecies} data-region={countyMode?'stockholm':'botkyrka'} data-basemap={satellite?'satellite':'map'} aria-busy={(!!habitat||!!countySpecies)&&!sourceReady} aria-label={`Interaktiv karta över ${countyMode?'Stockholms län':'Botkyrka'}. Välj en punkt genom att klicka, eller använd koordinatformuläret.`}/>
     <div className="map-view-controls"><div role="group" aria-label="Kartbakgrund"><button type="button" aria-pressed={!satellite} onClick={()=>setSatellite(false)}>Karta</button><button type="button" aria-pressed={satellite} onClick={()=>{setSatelliteError(false);setSatellite(true);}}>Satellit</button></div>{habitat||countySpecies?<label><input type="checkbox" checked={showHabitat} onChange={e=>setShowHabitat(e.target.checked)}/> Visa habitatytor</label>:null}</div>
     {error?<div className="map-notice" role="status">Kartan kunde inte laddas helt. Du kan fortfarande ange koordinater i formuläret.</div>:satellite&&satelliteError?<div className="map-notice" role="status">Satellitbilden kunde inte laddas. Välj Karta för vanlig kartbakgrund.</div>:(habitat||countySpecies)&&!sourceReady?<div className="map-notice" role="status">Ritar artens markytor…</div>:null}
     <div className="map-legend"><span className="legend-line"/> {satellite?'Satellit 2024–2025 · 10 m/pixel · inte live':countyMode?'Stockholms län · markstöd, inte fyndprognos':'Pilotområde · SCB RegSO 2025'}</div></div>;
