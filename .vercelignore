@@ -9,7 +9,7 @@ data/weather
 data/landcover
 projektplaner
 tests
-supabase
+/supabase
 AGENTS.md
 HANDOFF.md
 NEXT-CHAT.md
