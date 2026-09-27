@@ -96,7 +96,8 @@ def osm():
     snapshot_path = DATA / 'osm-snapshot.json'
     if not snapshot_path.exists():
         # Consistent historical instant across all municipal requests and resumes.
-        response = requests.get(OVERPASS, params={'data': '[out:json];node(1);out;'}, timeout=(30, 60))
+        response = requests.get(OVERPASS, params={'data': '[out:json];node(1);out;'},
+                                headers={'User-Agent': 'Svampatlas-Stockholm-data-import/1.0'}, timeout=(30, 60))
         response.raise_for_status()
         raw = response.json()
         if raw.get('remark'):
