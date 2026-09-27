@@ -12,6 +12,7 @@ try {
   await expect(page.locator('.habitat-ranking button').first()).toBeVisible({timeout:60000});
   await expect(page.locator('.weather-score strong')).toHaveText(/^\d{1,3}$/,{timeout:30000});
   const canvas=page.locator('.map-canvas canvas');await canvas.evaluate(e=>e.dataset.testIdentity='persistent');
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-habitat-ready','true',{timeout:60000});
   await page.locator('.habitat-ranking button').first().click();
   await expect(page.locator('.habitat-detail')).toContainText('Vald yta');
   const selected=await page.locator('.habitat-ranking button').first().getAttribute('data-cell-id');
@@ -20,15 +21,33 @@ try {
   // Clicking the representative land pixel should resolve to the same analysis cell.
   const marker=page.locator('.maplibregl-marker');
   await expect(marker).toBeVisible();
+  await canvas.scrollIntoViewIfNeeded();
+  // At the pilot overview one screen pixel spans tens of metres; zoom at the
+  // marker before testing an exact 10 m land pixel instead of clicking a rounded pin.
+  const overviewMarker=await marker.boundingBox();
+  await page.mouse.move(overviewMarker.x+overviewMarker.width/2,overviewMarker.y+overviewMarker.height/2+14);
+  await page.mouse.wheel(0,-900);
+  await page.waitForTimeout(1200);
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-habitat-ready','true',{timeout:60000});
   const markerBounds=await marker.boundingBox(),canvasBounds=await canvas.boundingBox();
   const px=markerBounds.x+markerBounds.width/2-canvasBounds.x;
-  const py=markerBounds.y+markerBounds.height-canvasBounds.y-2;
+  // MapLibre's default marker uses center anchoring with offset [0,-14].
+  const py=markerBounds.y+markerBounds.height/2+14-canvasBounds.y;
   await canvas.click({position:{x:px,y:py},force:true});
   await expect(page.locator('.habitat-detail')).toContainText(`Vald yta ${selected}`);
   // Zoom through the real map controls; switching species must keep the same canvas and marker transform.
-  await page.locator('.maplibregl-ctrl-zoom-in').click();
-  await page.waitForTimeout(800);
   const markerTransform=await marker.getAttribute('style');
+  const satelliteResponse=page.waitForResponse(r=>r.url().includes('s2cloudless-2025')&&r.status()===200,{timeout:30000});
+  await page.getByRole('button',{name:'Satellit',exact:true}).click();
+  await satelliteResponse;
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-basemap','satellite');
+  await expect(marker).toHaveAttribute('style',markerTransform);
+  await expect(page.locator('.maplibregl-ctrl-attrib')).toContainText('EOxCloudless');
+  await page.getByLabel('Visa habitatytor',{exact:true}).uncheck();
+  await expect(page.getByLabel('Visa habitatytor',{exact:true})).not.toBeChecked();
+  await page.locator('.map-container').screenshot({path:'artifacts/satellite.png'});
+  await page.getByLabel('Visa habitatytor',{exact:true}).check();
+  await page.getByRole('button',{name:'Karta',exact:true}).click();
   const names=['Trattkantarell','Svart trumpetsvamp','Stensopp','Blek taggsvamp','Rödgul trumpetsvamp','Smörsopp','Fårticka','Röd flugsvamp','Toppslätskivling','Kantarell'];
   for(const name of names){
     await page.getByRole('combobox',{name:'Välj svamp'}).click();
@@ -36,11 +55,13 @@ try {
     await expect(page.locator('#habitat-heading')).toHaveText(`Kartytor för ${name.toLocaleLowerCase('sv-SE')}`);
     await expect(canvas).toHaveAttribute('data-test-identity','persistent');
     await expect(marker).toHaveAttribute('style',markerTransform);
+    await expect(page.locator('.map-canvas')).toHaveAttribute('data-habitat-ready','true',{timeout:60000});
   }
   assert.equal(weatherRequests,1,'Species changes must reuse weather');
   await mkdir('artifacts',{recursive:true});
   await page.screenshot({path:'artifacts/habitat-desktop.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
+  await page.getByRole('button',{name:'Satellit',exact:true}).click();
   await page.screenshot({path:'artifacts/habitat-mobile.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Mobile overflow');
   await expect.poll(()=>page.locator('.map-canvas').evaluate(e=>e.clientHeight)).toBeGreaterThan(300);

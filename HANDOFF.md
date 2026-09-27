@@ -1,3 +1,17 @@
+## Fas 1 – 2026-09-27: platsfilter och satellit
+
+**Aktuell avgränsning:** slutför Botkyrka och stanna före datahämtning för Stockholmsregionen. Användaren vill kontrollera kontexten innan fas 2. Ingen Stockholmshämtning är gjord i detta arbetspass.
+
+Implementerat: OSM-baserat platsfilter för parker, skolor, skötta grönytor, bostäder, centrum/handel och andra definierade miljöer. 3 261 kartobjekt i Botkyrkauttaget, 390 005 borttagna 10-meterspixlar (39,0005 km² inom piloten). Markstödet använder kvarvarande pixlar; ursprunglig klassfördelning finns kvar. 3 791 analysrutor och 25 419 markklassgeometrier, cirka 8,7 MB packad webbdata före HTTP-komprimering. Skolbuffert 100 m, handel/centrum 75 m, övriga regler och osäkerheter finns i projektplaner/13-fas1-platsfilter-satellit.md samt /om#platsfilter.
+
+Satellit: EOxCloudless/Sentinel-2, bilder 2024–2025, 10 m grundupplösning, attribution i kartan. Knappar Karta/Satellit och Visa habitatytor. Icke-kommersiell pilotlicens CC BY-NC-SA 4.0; kommersiell drift kräver licens eller leverantörsbyte. Ingen bulk-/offlinehämtning. Art- och bakgrundsbyte behåller kartinstansen och vald punkt.
+
+Verifierat: 24 domäntester, lint och produktionsbygge inklusive TypeScript passerar. Oberoende Pythonkontroll av alla 25 419 avkodade geometrier mot 3 261 undantagsytor passerar med koordinatavrundningstolerans 0,064 m² (observerade rester under 0,01 m², källpixel 100 m²). Satellitbilder laddas i riktig browser och bildkontroll är gjord. Det samlade browsertestet pågår; ett exakt pixelklick kräver inzoomning eftersom markören avrundas till skärmpixel i översiktsläge. Kartans källuppdatering är korrigerad så transparenta lager fortfarande får laddas.
+
+Första habitatpushen 8824a66 är verifierad READY i Vercel på https://svampatlas.vercel.app. Vercel-projekt prj_Ra3f5zblOTziayUMbwtJaAult4T5, team_ofmSi6R58ZAqEzb9Mn7n3hdK, Git main i friggees/svampatlas. Användarens fem tidigare produktionsfixar har mergats och bevarats.
+
+Nästa steg i detta arbetspass: avsluta browserkontroll, verifiera fas 1-deployment, uppdatera status och stanna inför användarens kontextkontroll. Därefter endast på ny instruktion: fas 2 för Stockholm. Fältvalidering och expertgranskning kvarstår.
+
 ## Senaste implementation – 2026-09-27, habitatintegration
 
 Detta avsnitt ersätter äldre uppgifter nedan om nästa kartuppgift. Habitatlagret är nu implementerat lokalt för alla tio arter. 3 791 analysrutor och 29 770 markklassgeometrier har härletts från det verifierade NMD-rastret. Webbexporten är cirka 10,6 MB med förlustfri deltakodning av sexdecimaliga koordinater. `python scripts/build-habitat.py` återskapar den från den lokala rasterfilen.

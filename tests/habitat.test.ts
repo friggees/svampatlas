@@ -29,7 +29,7 @@ describe('real habitat export and model',()=>{
       const results=rankHabitat(data,s.id,climate,now);
       expect(results.length).toBeGreaterThan(0);
       for(const r of results){expect(r.score).toBeLessThanOrEqual(r.weatherScore!);expect(r.score).toBeLessThanOrEqual(r.share*100);if(habitatProfiles[s.id].limited)expect(r.score).toBeLessThanOrEqual(59);}
-      const map=habitatMap(data,s.id,results,null);
+      const map=habitatMap(data,s.id,results);
       expect(map.features.length).toBeGreaterThan(0);
       expect(map.features.every(f=>habitatProfiles[s.id].codes.includes(f.properties!.code))).toBe(true);
       const picks=spacedSuggestions(results);
@@ -44,12 +44,23 @@ describe('real habitat export and model',()=>{
     expect(habitatShare({id:'water',pixels:100,counts:{61:100}},'kantarell')).toBe(0);
     expect(habitatShare({id:'bad',pixels:100,counts:{111:101}},'kantarell')).toBeNull();
   });
+  it('removes managed places from habitat support as well as from map footprints',()=>{
+    expect(habitatShare({id:'park',pixels:100,counts:{111:100},availableCounts:{},excludedPixels:100},'kantarell')).toBe(0);
+    expect(habitatShare({id:'edge',pixels:100,counts:{111:100},availableCounts:{111:20},excludedPixels:80},'kantarell')).toBe(.2);
+    expect(habitatShare({id:'invalid',pixels:100,counts:{111:100},availableCounts:{111:101}},'kantarell')).toBeNull();
+    expect(data.metadata.exclusions?.excludedPixels).toBeGreaterThan(0);
+    expect(data.cells.reduce((n,c)=>n+(c.excludedPixels??0),0)).toBe(data.metadata.exclusions?.excludedPixels);
+    for(const feature of data.features){
+      const cell=data.cells.find(c=>c.id===feature.properties.cellId)!;
+      expect(cell.availableCounts?.[feature.properties.code]).toBeGreaterThan(0);
+    }
+  });
   it('hides ratings on missing/stale weather and does not borrow another reference when nearest fails',()=>{
     for(const weather of [null,{...climate,endDate:'2026-09-25'}]){
       const results=rankHabitat(data,'kantarell',weather,now);
       expect(results.every(r=>r.score===null&&r.rank===null)).toBe(true);
       expect(spacedSuggestions(results)).toEqual([]);
-      expect(habitatMap(data,'kantarell',results,null).features.every(f=>f.properties!.score===-1&&!f.properties!.best)).toBe(true);
+      expect(habitatMap(data,'kantarell',results).features.every(f=>f.properties!.score===-1&&!f.properties!.best)).toBe(true);
     }
     const failed={...climate,areas:climate.areas.filter(a=>a.id!=='tumba')};
     const results=rankHabitat(data,'kantarell',failed,now).filter(r=>r.weatherName==='Tumba');

@@ -36,3 +36,9 @@ Största osäkerheten är kvaliteten på habitatbedömningen, inte kartgränssni
 ## Habitatunderlag
 
 Webbdata finns i `public/data/botkyrka-habitat.json`. Återskapa med `python scripts/build-habitat.py` efter rasterhämtningen enligt NEXT-CHAT.md. Ingen Python eller nationell rasterfil behövs vid Vercelbygge. Kör `npm run test:habitat-browser` mot lokal produktionsserver för det nya kartflödet.
+
+## Fas 1: platsfilter och satellit
+
+Kartlagda skötta/tätbebyggda miljöer filtreras bort från både ytor och markstöd. Byt till **Satellit** och dölj habitatytorna för en ren Sentinel-2-bild (2024–2025, 10 m/pixel). EOX-tjänsten gäller icke-kommersiell pilot; kommersiell användning kräver licens. Filtrerade data delas under ODbL, original-NMD är CC0.
+
+Reproduktion: `python scripts/fetch-exclusions.py`, sedan `python scripts/build-habitat.py`. Kontroll: `python scripts/verify-habitat-filter.py`. Se [fas 1 och gränsen till fas 2](projektplaner/13-fas1-platsfilter-satellit.md). **Stockholmsregionens datahämtning är inte påbörjad; vi inväntar användarens kontextkontroll.**
