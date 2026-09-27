@@ -1,0 +1,16 @@
+{
+  "name": "Botkyrka",
+  "municipalityCode": "0127",
+  "source": "SCB RegSO 2025",
+  "sourceUrl": "https://www.scb.se/vara-tjanster/oppna-data/oppna-geodata/regso/",
+  "requestUrl": "https://geodata.scb.se/geoserver/stat/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=stat%3ARegSO_2025&outputFormat=application%2Fjson&srsName=EPSG%3A4326&CQL_FILTER=kommunkod%3D%270127%27&count=1000",
+  "fetchedAt": "2026-09-27T09:52:03.582Z",
+  "featureCount": 20,
+  "bbox": [
+    17.66298035,
+    59.04429566,
+    17.98482939,
+    59.26852
+  ],
+  "note": "Pilotutbredning från SCB:s RegSO-områden för kommunen; inte en fastighets- eller tillträdeskarta."
+}

@@ -1,0 +1,16 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+const url = new URL('https://geodata.scb.se/geoserver/stat/wfs');
+url.search = new URLSearchParams({ service:'WFS', version:'2.0.0', request:'GetFeature', typeNames:'stat:RegSO_2025', outputFormat:'application/json', srsName:'EPSG:4326', CQL_FILTER:"kommunkod='0127'", count:'1000' });
+const response = await fetch(url, { signal: AbortSignal.timeout(60000) });
+if (!response.ok) throw new Error(`SCB HTTP ${response.status}`);
+const data = await response.json();
+if (!data.features?.length || data.features.some(f => f.properties.kommunkod !== '0127')) throw new Error('Fel kommun eller tomt svar');
+if (data.numberMatched > data.features.length) throw new Error('Ofullständigt datauttag');
+const coordinates = data.features.flatMap(f => f.geometry.coordinates.flat(Infinity));
+const lons = coordinates.filter((_, i) => i % 2 === 0), lats = coordinates.filter((_, i) => i % 2 === 1);
+const bbox = [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)];
+if (bbox[0] < 17 || bbox[2] > 19 || bbox[1] < 58 || bbox[3] > 60) throw new Error('Oväntad koordinatordning/utbredning');
+await mkdir('public/data', { recursive:true });
+await writeFile('public/data/botkyrka-regso.geojson', JSON.stringify({type:'FeatureCollection', features:data.features, bbox}));
+await writeFile('public/data/pilot-metadata.json', JSON.stringify({name:'Botkyrka', municipalityCode:'0127', source:'SCB RegSO 2025', sourceUrl:'https://www.scb.se/vara-tjanster/oppna-data/oppna-geodata/regso/', requestUrl:url.href, fetchedAt:new Date().toISOString(), featureCount:data.features.length, bbox, note:'Pilotutbredning från SCB:s RegSO-områden för kommunen; inte en fastighets- eller tillträdeskarta.'}, null, 2));
+console.log(JSON.stringify({featureCount:data.features.length, bbox}));

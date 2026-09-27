@@ -1,0 +1,9 @@
+import {it,expect} from 'vitest';
+import {assessWeather,type WeatherDay,type WeatherProfile} from '../src/features/exploration/weather-domain';
+// Synthetic values only, not a mushroom's actual ecological requirements.
+const profile:WeatherProfile={version:'synthetic-test-only',reviewed:true,windowDays:4,temperatureRange:[10,15],humidityRange:[60,90],rainTotalRange:[4,20],weights:{temperature:1,humidity:1,rain:1,stress:1},stressDays:4};
+const days:WeatherDay[]=[1,2,3,4].map(d=>({date:`2026-09-0${d}`,temperatureC:12,rainMm:2,relativeHumidityPct:75}));
+it('penalizes longer unsuitable temperature exposure',()=>{const good=assessWeather(days,'2026-09-04',profile);const short=assessWeather(days.map((d,i)=>({...d,temperatureC:i===3?25:12})),'2026-09-04',profile);const long=assessWeather(days.map(d=>({...d,temperatureC:25})),'2026-09-04',profile);expect(good.index!).toBeGreaterThan(short.index!);expect(short.index!).toBeGreaterThan(long.index!);});
+it('varies by species profile and excludes future observations',()=>{const a=assessWeather(days,'2026-09-04',profile);expect(assessWeather(days,'2026-09-04',{...profile,temperatureRange:[20,25]}).index).toBeLessThan(a.index!);expect(assessWeather([...days,{...days[0],date:'2026-09-05',temperatureC:99}],'2026-09-04',profile)).toEqual(a);});
+it('does not turn missing data or duplicate days into favorable weather',()=>{expect(assessWeather(days.slice(1),'2026-09-04',profile).status).toBe('unavailable');expect(assessWeather(days.map(d=>({...d,relativeHumidityPct:null})),'2026-09-04',profile).index).toBeNull();expect(assessWeather([...days,days[0]],'2026-09-04',profile).index).toBeNull();});
+it('blocks unreviewed profiles and invalid dates',()=>{expect(assessWeather(days,'2026-09-04',{...profile,reviewed:false}).index).toBeNull();expect(assessWeather(days,'2026-02-30',profile).index).toBeNull();});

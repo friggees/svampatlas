@@ -1,0 +1,11 @@
+'use client';
+import {useState,useTransition} from 'react';
+import {Navigation,Trash2,MapPin} from 'lucide-react';
+import {Card} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {AlertDialog,AlertDialogTrigger,AlertDialogContent,AlertDialogHeader,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogCancel,AlertDialogAction} from '@/components/ui/alert-dialog';
+import type {SavedArea} from './schema';
+import {deleteArea} from './actions';
+import {directionsUrl} from '../exploration/domain';
+import {findSpecies} from '../species/catalog';
+export function SavedList({areas}:{areas:SavedArea[]}){const [error,setError]=useState('');const [pending,startTransition]=useTransition();return <><p role="status" className="form-error">{error}</p><div className="saved-grid">{areas.map(area=><Card key={area.id} className="saved-card"><div className="card-icon"><MapPin size={21}/></div><span className="eyebrow">{findSpecies(area.species_id)?.name??area.species_id}</span><h2>{area.name}</h2><p>{area.notes||'En plats att återvända till.'}</p><p className="coordinates">{area.latitude.toFixed(5)}, {area.longitude.toFixed(5)}</p><p className="small-note">Vägbeskrivning går till din valda punkt. Kontrollera att den är en lämplig startpunkt.</p><div className="saved-actions"><Button asChild variant="outline"><a href={directionsUrl(area)} target="_blank" rel="noopener noreferrer"><Navigation size={15}/> Vägbeskrivning</a></Button><AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" aria-label={`Ta bort ${area.name}`} disabled={pending}><Trash2 size={16}/></Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Ta bort {area.name}?</AlertDialogTitle><AlertDialogDescription>Platsen och din anteckning tas bort från ditt konto.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Avbryt</AlertDialogCancel><AlertDialogAction onClick={()=>startTransition(async()=>{try{const result=await deleteArea(area.id);setError(result.error??'');}catch{setError('Kunde inte ta bort platsen. Försök igen.');}})}>Ta bort</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></div></Card>)}</div></>;}

@@ -1,0 +1,50 @@
+[
+  {
+    "parameter": 1,
+    "station": "Tullinge",
+    "stationKey": "97100",
+    "count": 2198,
+    "first": {
+      "date": 1782388800000,
+      "value": "25.5",
+      "quality": "G"
+    },
+    "last": {
+      "date": 1790499600000,
+      "value": "11.8",
+      "quality": "G"
+    }
+  },
+  {
+    "parameter": 6,
+    "station": "Tullinge",
+    "stationKey": "97100",
+    "count": 2189,
+    "first": {
+      "date": 1782486000000,
+      "value": "61",
+      "quality": "Y"
+    },
+    "last": {
+      "date": 1790499600000,
+      "value": "99",
+      "quality": "G"
+    }
+  },
+  {
+    "parameter": 7,
+    "station": "Tullinge",
+    "stationKey": "97100",
+    "count": 2228,
+    "first": {
+      "date": 1782482400000,
+      "value": "0.0",
+      "quality": "Y"
+    },
+    "last": {
+      "date": 1790499600000,
+      "value": "0.0",
+      "quality": "G"
+    }
+  }
+]

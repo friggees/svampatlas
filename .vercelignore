@@ -1,0 +1,15 @@
+.env
+.env.*
+.local.env
+local.env
+node_modules
+.next
+artifacts
+data/weather
+projektplaner
+tests
+supabase
+AGENTS.md
+HANDOFF.md
+README.md
+*.tsbuildinfo
