@@ -6,6 +6,8 @@
 local.env
 artifacts/
 data/landcover/
+data/stockholm/
+scripts/__pycache__/
 public/maplibre/
 
 # Next.js and dependencies

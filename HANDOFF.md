@@ -1,4 +1,16 @@
-﻿# Överlämning vid chattbyte – 2026-09-27
+# Aktuell status – 2026-09-27
+
+Fas 1 är tekniskt slutverifierad. `npm run test:habitat-browser` passerade hela flödet mot det befintliga produktionsbygget på port 3001: alla tio arter, listval/kartklick, bevarad kartinstans och zoom, satellit, delad väderhämtning, mobil utan overflow, väderfel/gamla dygn/återförsök, habitatfel/återförsök och metodsida. Inga page errors. Desktop/mobil/satellitbilder granskade. Inga appkorrigeringar behövdes. Tidigare 24 domäntester, lint, bygge och geometrikontroll gäller oförändrad kod.
+
+Användaren har därefter uttryckligen beställt datahämtning för **hela Stockholms län** för alla tio svampar. Det ersätter tidigare stopp inför fas 2. Parker, skötta gräsytor, centrum, stationer och skolor ska filtreras. Extra närhetsbuffertar ska ta hänsyn till tätort/landsbygd. Fältvalidering och ekologisk expertgranskning återstår separat.
+
+Fas 2 pågår: `scripts/fetch-stockholm.py` hämtar SCB RegSO 2025 för länets 26 kommuner, SCB tätorter 2023 samt cachade OSM-uttag med samma tidpunkt. Nationellt NMD2023 v2.1-raster finns redan i `data/landcover/`. Regionala rådata sparas i ignorerade `data/stockholm/`. Regional karta är ännu inte publicerad. Befintlig Botkyrkaproduktion bevaras medan länsunderlaget tas fram.
+
+---
+
+## Föregående överlämning (historik)
+
+# Överlämning vid chattbyte – 2026-09-27
 
 Detta är aktuell status och ersätter äldre uppgifter om nästa steg.
 
