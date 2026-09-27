@@ -31,6 +31,8 @@ RULES = {key: dict(values) for key, values in pilot.RULES.items()}
 RULES['amenity']['bus_station'] = 75
 RULES['railway'] = {'station': 100, 'halt': 75, 'platform': 25, 'tram_stop': 25}
 RULES['public_transport'] = {'station': 100, 'platform': 25}
+# Fetch this context too, but grass cover alone does not prove mowing.
+RULES['landcover'] = {'grass': 15}
 
 
 def digest(path):

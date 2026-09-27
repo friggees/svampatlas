@@ -148,7 +148,7 @@ def exclusions():
                 continue
             seen.add(osm_id)
             matches = [(key, value, metres) for key, values in fetch.RULES.items() for value, metres in values.items()
-                       if element.get('tags', {}).get(key) == value]
+                       if key != 'landcover' and element.get('tags', {}).get(key) == value]
             if not matches:
                 continue
             key, value, metres = max(matches, key=lambda match: match[2])
