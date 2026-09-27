@@ -8,7 +8,7 @@ artifacts
 data/weather
 projektplaner
 tests
-supabase
+/supabase
 AGENTS.md
 HANDOFF.md
 README.md
