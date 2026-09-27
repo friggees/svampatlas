@@ -6,10 +6,12 @@ node_modules
 .next
 artifacts
 data/weather
+data/landcover
 projektplaner
 tests
 supabase
 AGENTS.md
 HANDOFF.md
+NEXT-CHAT.md
 README.md
 *.tsbuildinfo

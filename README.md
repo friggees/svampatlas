@@ -2,7 +2,7 @@
 
 Projektplan för en svensk svamp- och fotoapp med Next.js, Supabase och shadcn/ui.
 
-Status: karta, artkatalog, Supabase-inloggning, privata sparade platser och preliminär väderbaserad områdesjämförelse fungerar. Välj art och klicka på **Utforska området** för att analysera 14 dygns temperatur, regn, luft- och markfuktighet för fem områden i Botkyrka. Längre temperaturstress, torka och frost sänker betyget. Artprofilernas intervall är deklarerade pilotantaganden; habitat och fyndchans är ännu inte bedömda. Ingen driftsättning är gjord. Se HANDOFF.md för tester och nästa steg.
+Status: karta, artkatalog, Supabase-inloggning och privata sparade platser fungerar. **Utforska området** visar nu experimentella artberoende habitatytor från NMD2023 v2.1 tillsammans med 14 dygns väder. Alla tio arter har källstödda ekologiska beskrivningar och öppet deklarerade, ännu inte fältvaliderade markprofiler. Kartan och listan delar bedömning och väderdata; inga procentuella fyndchanser visas. Se NEXT-CHAT.md för verifieringsstatus och kvarvarande arbete.
 
 ## Starta lokalt
 
@@ -12,7 +12,7 @@ Kontroller: `npm run lint`, `npm test`, `npm run build`. Integrationstest och br
 
 ## Läsordning
 
-**Ny chatt: börja med [överlämningen](HANDOFF.md).** Där finns senaste beslut, verifierad anslutningsstatus och nästa steg.
+**Ny chatt: börja med [senaste överlämningen](NEXT-CHAT.md).** Där finns senaste beslut, markunderlag, publiceringsstatus och nästa steg. Äldre verifieringshistorik finns i [HANDOFF.md](HANDOFF.md).
 
 1. [Produkt och omfattning](projektplaner/01-produkt.md)
 2. [Användarflöden och design](projektplaner/02-design.md)
@@ -32,3 +32,7 @@ Kontroller: `npm run lint`, `npm test`, `npm run build`. Integrationstest och br
 En användare väljer art och sökområde, får förklarade habitatförslag, sparar ett privat område och öppnar vägbeskrivning till en vald startpunkt. Botkyrka kommun är första pilot, med Stockholmsregionen som nästa expansionssteg. Se [pilotavgränsningen](projektplaner/10-pilot-botkyrka.md).
 
 Största osäkerheten är kvaliteten på habitatbedömningen, inte kartgränssnittet. Därför kommer en dataprotyp före full produktutveckling. Alla arter kan finnas i katalogen, men områdesrankning aktiveras bara där artprofil och data har validerats.
+
+## Habitatunderlag
+
+Webbdata finns i `public/data/botkyrka-habitat.json`. Återskapa med `python scripts/build-habitat.py` efter rasterhämtningen enligt NEXT-CHAT.md. Ingen Python eller nationell rasterfil behövs vid Vercelbygge. Kör `npm run test:habitat-browser` mot lokal produktionsserver för det nya kartflödet.

@@ -1,4 +1,18 @@
+## Senaste implementation – 2026-09-27, habitatintegration
+
+Detta avsnitt ersätter äldre uppgifter nedan om nästa kartuppgift. Habitatlagret är nu implementerat lokalt för alla tio arter. 3 791 analysrutor och 29 770 markklassgeometrier har härletts från det verifierade NMD-rastret. Webbexporten är cirka 10,6 MB med förlustfri deltakodning av sexdecimaliga koordinater. `python scripts/build-habitat.py` återskapar den från den lokala rasterfilen.
+
+Kartan och listan använder samma kombinerade index: minsta värdet av matchande markandel × 100 och artens befintliga väderbetyg. Fyra profiler med viktiga dataluckor begränsas till 59. Detta är deklarerade experimentella regler, inte fyndsannolikhet eller fältvaliderad habitatlämplighet. Artkällor, klassurval och luckor finns i habitat-profiles.ts och /om#habitat. Väderhämtningen delas genom useWeather; fel och gamla dygn tar bort kombinerade betyg.
+
+Verifierat: 23 tester passerar, lint passerar, typecheck och produktionsbygge passerar. Agent-browser visar karta och habitatlager utan page errors. Fördjupat browsertest pågår: listval fungerade, men testets klick på markörens spets träffade inte avsedd yta; utred klickkoordinat och rendering innan flödet anses slutverifierat. Testskript: npm run test:habitat-browser. Ingen databas- eller authändring gjord.
+
+Användaren har bett att prioritera push till befintliga origin/main före ytterligare tester, så Vercel kan uppdateras. Git finns faktiskt och origin är https://github.com/friggees/svampatlas.git; äldre text om att Git saknas är fel. Vercels nya byggstatus är ännu inte kontrollerad.
+
+Nästa steg: slutför browserkontrollen (alla arter, klick, zoom, mobil, väderfel/gamla dygn/återförsök), kontrollera Verceldeployment och uppdatera verifieringsstatus. Fältvalidering och ekologisk expertgranskning återstår.
+
 # Överlämning till nästa chatt
+
+**Senaste överlämning 2026-09-27: läs [NEXT-CHAT.md](NEXT-CHAT.md) först.** Den ersätter äldre uppgifter här om markunderlag, publicering och nästa uppgift. Användaren har själv publicerat till Vercel. NMD2023 v2.1 är hämtat och klippt till Botkyrkapiloten: 10 meters upplösning, 49 klasser, inga saknade pixlar i pilotmasken, integritetskontroller godkända. Filer och nästa arbetsordning finns i NEXT-CHAT.md. Kartans habitatintegration återstår till nästa chatt.
 
 ## AKTUELL IMPLEMENTATION, INKLUSIVE VÄDERANALYS – 2026-09-27
 

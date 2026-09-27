@@ -20,7 +20,7 @@ try{
  await page.goto(`${base}/sparat`);await page.getByRole('heading',{name:'Browserns testglänta'}).waitFor();assert.ok((await page.getByRole('link',{name:'Vägbeskrivning'}).getAttribute('href')).includes('59.198%2C17.834'));
  await page.reload();await page.getByRole('heading',{name:'Browserns testglänta'}).waitFor();
  await page.getByRole('button',{name:'Ta bort Browserns testglänta',exact:true}).click();await page.getByRole('button',{name:'Ta bort',exact:true}).click();await page.getByRole('heading',{name:'Din nästa favoritplats väntar'}).waitFor();
- await page.goto(`${base}/`);await page.getByRole('button',{name:'Utforska området'}).click();await page.getByRole('heading',{name:'Habitatbedömning kommer senare'}).waitFor();
+ await page.goto(`${base}/`);await page.getByRole('button',{name:'Utforska området'}).click();await page.getByRole('heading',{name:'Kartytor för kantarell'}).waitFor();
  await page.getByRole('heading',{name:'Områden efter väderbetyg'}).waitFor({timeout:25000});
  await expect(page.locator('.weather-ranking li button')).toHaveCount(5);
  await expect(page.locator('.weather-score strong')).toHaveText(/^\d{1,3}$/);

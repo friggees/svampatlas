@@ -5,6 +5,7 @@
 .local.env
 local.env
 artifacts/
+data/landcover/
 public/maplibre/
 
 # Next.js and dependencies

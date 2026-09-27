@@ -12,6 +12,7 @@
     "test:integration": "node --env-file=.env.local scripts/verify-supabase.mjs",
     "predev": "node scripts/copy-map-worker.mjs",
     "prebuild": "node scripts/copy-map-worker.mjs",
+    "test:habitat-browser": "node scripts/verify-habitat-browser.mjs",
     "test:browser": "node --env-file=.env.local scripts/verify-browser.mjs"
   },
   "dependencies": {

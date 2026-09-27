@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { CloudRain, Droplets, Thermometer, RefreshCw, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { assessClimate, lastCompletedDate, rankClimate } from './climate-domain';
+import { assessClimate, rankClimate } from './climate-domain';
 import { climateProfiles } from './climate-profiles';
-import type { ClimateResponse } from './climate-contract';
+import type { WeatherModel } from './use-weather';
 import type { Point } from './domain';
 import type { SpeciesId } from '../species/catalog';
 import { findSpecies } from '../species/catalog';
@@ -17,40 +16,9 @@ const date = (value: string) => new Date(`${value}T12:00:00Z`).toLocaleDateStrin
 function distance(a: Point, b: Point) {
   return 111 * Math.hypot(a.latitude - b.latitude, (a.longitude - b.longitude) * Math.cos(a.latitude * Math.PI / 180));
 }
-type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: ClimateResponse };
-type Props = { speciesId: SpeciesId; point: Point | null; inside: boolean; onSelect: (point: Point) => void };
-
-export function WeatherPanel(props: Props) {
-  const [attempt, setAttempt] = useState(0);
-  // Remount for retry: old ratings disappear immediately, including after a failed refresh.
-  return <WeatherRequest key={attempt} {...props} onRetry={() => setAttempt(value => value + 1)} />;
-}
-
-function WeatherRequest({ speciesId, point, inside, onSelect, onRetry }: Props & { onRetry: () => void }) {
-  const [state, setState] = useState<State>({ status: 'loading' });
-  const [today, setToday] = useState(() => lastCompletedDate());
-  useEffect(() => {
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 20_000);
-    let active = true;
-    async function load() {
-      try {
-        const response = await fetch('/api/weather', { signal: controller.signal, cache: 'no-store' });
-        if (!response.ok) throw new Error('Vädertjänsten är inte tillgänglig just nu.');
-        const data = await response.json() as ClimateResponse;
-        if (!Array.isArray(data.areas) || !data.endDate) throw new Error('Vädertjänsten gav ett ofullständigt svar.');
-        if (active) setState({ status: 'ready', data });
-      } catch {
-        if (active) setState({ status: 'error', message: 'Väderanalysen kunde inte hämtas. Försök igen. Inga gamla betyg visas.' });
-      } finally { window.clearTimeout(timeout); }
-    }
-    void load();
-    const refreshDate = () => setToday(lastCompletedDate());
-    const timer = window.setInterval(refreshDate, 60_000);
-    window.addEventListener('focus', refreshDate);
-    return () => { active = false; controller.abort(); window.clearTimeout(timeout); window.clearInterval(timer); window.removeEventListener('focus', refreshDate); };
-  }, []);
-
+type Props = { speciesId: SpeciesId; point: Point | null; inside: boolean; onSelect: (point: Point) => void; weather: WeatherModel };
+export function WeatherPanel({ speciesId, point, inside, onSelect, weather }: Props) {
+  const {state,today,retry:onRetry} = weather;
   const profile = climateProfiles[speciesId];
   const results = state.status === 'ready' && state.data.endDate === today
     ? rankClimate(state.data.areas.map(area => ({ ...area, assessment: assessClimate(area.days, state.data.endDate, profile) }))) : [];
@@ -67,7 +35,7 @@ function WeatherRequest({ speciesId, point, inside, onSelect, onRetry }: Props &
       <p role="alert">{state.status === 'error' ? state.message : 'Ett nytt dygn har börjat. Uppdatera väderanalysen innan du jämför områden.'}</p>
       <Button variant="outline" onClick={onRetry}><RefreshCw size={15} /> Försök igen</Button></Card> : null}
     {results.length ? <>
-      <p className="weather-caveat">Betyget gäller väder, inte fyndchans. Artprofilerna är preliminära och habitatet är ännu inte bedömt. Högt betyg betyder inte att svampen finns där.</p>
+      <p className="weather-caveat">Betyget gäller väder, inte fyndchans. Artprofilerna är preliminära. Den kombinerade mark- och väderbedömningen visas vid kartan. Högt betyg betyder inte att svampen finns där.</p>
       {!inside ? <p role="status" className="weather-caveat">Din punkt ligger utanför piloten. Jämförelsen nedan gäller bara Botkyrka.</p> : null}
       <div className="weather-layout"><Card className="weather-ranking"><h3>Områden efter väderbetyg</h3>
         <p className="small-note">Lika betyg delar placering. Små skillnader är osäkra.</p>
