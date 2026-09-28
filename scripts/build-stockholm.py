@@ -17,7 +17,7 @@ from rasterio.warp import transform_geom
 from rasterio.windows import Window, bounds as window_bounds
 from shapely import make_valid
 from shapely.geometry import GeometryCollection, LineString, Point, box, mapping, shape
-from shapely.ops import unary_union
+from shapely.ops import unary_union, polygonize_full
 from shapely.strtree import STRtree
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -104,8 +104,30 @@ def clip():
 
 
 def object_geometry(element):
-    if element['type'] != 'relation' or element.get('tags', {}).get('type') == 'multipolygon':
-        return fetch.pilot.geometry(element), False
+    if element['type'] != 'relation':
+        return fetch.pilot.geometry(element), None
+    if element.get('tags', {}).get('type') == 'multipolygon':
+        rings = {}
+        fallback = None
+        for role in ('outer', 'inner'):
+            lines = [LineString([(p['lon'], p['lat']) for p in member['geometry'] if p])
+                     for member in element['members'] if member['type'] == 'way'
+                     and member.get('geometry') and member.get('role', 'outer') in
+                     ([role, ''] if role == 'outer' else [role])]
+            if not lines:
+                rings[role] = GeometryCollection()
+                continue
+            polygons, cuts, dangles, invalid = polygonize_full(unary_union(lines))
+            if not cuts.is_empty or not dangles.is_empty or not invalid.is_empty:
+                if role == 'outer':
+                    # Broken source geometry is quarantined, not silently treated
+                    # as usable habitat. Keep its conservative envelope explicit.
+                    return unary_union(lines).envelope, 'unclosed-outer-envelope'
+                fallback = 'unclosed-inner-omitted'
+            rings[role] = unary_union(list(polygons.geoms))
+        if rings['outer'].is_empty:
+            raise ValueError(f'Missing outer geometry for relation {element["id"]}')
+        return rings['outer'].difference(rings['inner']), fallback
     # Station/site relations may represent several platforms rather than an area.
     members = []
     for member in element.get('members', []):
@@ -117,7 +139,7 @@ def object_geometry(element):
                 members.append(LineString(coords))
     if not members:
         raise ValueError(f'No geometry for relation {element["id"]}')
-    return GeometryCollection(members), True
+    return GeometryCollection(members), 'relation-members'
 
 
 def exclusion_geometry(geom, urban, metres):
@@ -137,7 +159,7 @@ def exclusions():
     urban_path = DATA / 'urban-2023.geojson'
     urban = unary_union([projected(f['geometry']) for f in json.loads(urban_path.read_text(encoding='utf-8'))['features']])
     county = projected(json.loads((DATA / 'boundary.geojson').read_text(encoding='utf-8'))['features'][0]['geometry'])
-    seen, features, categories, relation_members = set(), [], Counter(), []
+    seen, features, categories, relation_members, quarantined = set(), [], Counter(), [], []
     for entry in manifest['files']:
         path = DATA / entry['file']
         if digest(path) != entry['sha256']:
@@ -152,7 +174,7 @@ def exclusions():
             if not matches:
                 continue
             key, value, metres = max(matches, key=lambda match: match[2])
-            geom, from_members = object_geometry(element)
+            geom, fallback = object_geometry(element)
             geom = projected(mapping(make_valid(geom)))
             if not geom.buffer(metres).intersects(county):
                 continue
@@ -160,18 +182,23 @@ def exclusions():
             excluded = excluded.intersection(county)
             if excluded.is_empty:
                 continue
-            if from_members:
+            if fallback == 'relation-members':
                 relation_members.append(osm_id)
+            elif fallback:
+                if geom.area > 100_000_000:
+                    raise ValueError(f'Broken source geometry too large to quarantine: {osm_id}')
+                quarantined.append({'osmId': osm_id, 'reason': fallback, 'areaSquareMetres': geom.area})
             category = f'{key}={value}'
             categories[category] += 1
             features.append({'type': 'Feature', 'properties': {'osmId': osm_id, 'category': category,
-                'urbanBufferMetres': metres, 'coreProxyMetres': core_margin}, 'geometry': mapping(excluded)})
+                'urbanBufferMetres': metres, 'coreProxyMetres': core_margin, 'geometryFallback': fallback}, 'geometry': mapping(excluded)})
         print(f'Exclusions: {entry["municipalityCode"]}, {len(features)} unique county objects', flush=True)
     save(DATA / 'exclusions-3006.geojson', {'type': 'FeatureCollection',
         'crs': {'type': 'name', 'properties': {'name': 'urn:ogc:def:crs:EPSG::3006'}}, 'features': features,
         'metadata': {'source': 'OpenStreetMap contributors; SCB Tatorter 2023', 'license': 'ODbL-1.0',
         'osmManifestSha256': digest(manifest_path), 'urbanSha256': digest(urban_path), 'snapshot': manifest['snapshot'],
         'rules': fetch.RULES, 'categories': dict(categories), 'memberGeometryRelations': relation_members,
+        'quarantinedGeometries': quarantined,
         'method': 'Mapped footprints excluded everywhere; additional margins only inside SCB urban polygons. '
                   'Point/line proxies up to 15 m. Natural grassland/pasture not excluded by grass cover alone. '
                   'OSM is incomplete; management and mowing frequency are not verified.'}})
