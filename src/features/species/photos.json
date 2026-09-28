@@ -1,0 +1,322 @@
+{
+  "kantarell": [
+    {
+      "src": "/images/species/kantarell-1.jpg",
+      "author": "Strobilomyces",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:Chanterelle_Cantharellus_cibarius.jpg",
+      "width": 960,
+      "height": 721,
+      "alt": "Kantareller med gula, vågiga hattar och nedlöpande åsar."
+    },
+    {
+      "src": "/images/species/kantarell-2.jpg",
+      "author": "EmillimeS",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Cantharellus_cibarius;_101_0612.jpg",
+      "width": 960,
+      "height": 719,
+      "alt": "Kantareller visade från hattens ovansida och undersida."
+    },
+    {
+      "src": "/images/species/kantarell-3.jpg",
+      "author": "Horst74",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Li%C5%A1ka_obecn%C3%A1D.JPG",
+      "width": 960,
+      "height": 720,
+      "alt": "Närbild av kantarellens åsar och gula fot."
+    }
+  ],
+  "trattkantarell": [
+    {
+      "src": "/images/species/trattkantarell-1.jpg",
+      "author": "Jerzy Opioła",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Cantharellus_tubaeformis_G28.JPG",
+      "width": 960,
+      "height": 721,
+      "alt": "Trattkantareller med brun tratt och ljusa åsar under hatten."
+    },
+    {
+      "src": "/images/species/trattkantarell-2.jpg",
+      "author": "Jörg Hempel",
+      "license": "CC BY-SA 3.0 de",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/de/deed.en",
+      "source": "https://commons.wikimedia.org/wiki/File:Craterellus_tubaeformis_LC0374.jpg",
+      "width": 960,
+      "height": 1200,
+      "alt": "Trattkantareller med gula fötter i mossig skog."
+    },
+    {
+      "src": "/images/species/trattkantarell-3.jpg",
+      "author": "Holger Krisp",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Trompetenpfifferling_Craterellus_tubaeformis.jpg",
+      "width": 960,
+      "height": 652,
+      "alt": "Grupp av trattkantareller, med en undersida vänd mot kameran."
+    }
+  ],
+  "svart-trumpetsvamp": [
+    {
+      "src": "/images/species/svart-trumpetsvamp-1.jpg",
+      "author": "Jean-Pol GRANDMONT",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Craterellus_cornucopioides_JPG1.jpg",
+      "width": 960,
+      "height": 640,
+      "alt": "Svarta trumpetsvampar med grå utsida och mörka ihåliga trattar."
+    },
+    {
+      "src": "/images/species/svart-trumpetsvamp-2.jpg",
+      "author": "J.Marqua",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:Craterellus_cornucopioides_03.jpg",
+      "width": 960,
+      "height": 722,
+      "alt": "Svarta trumpetsvampar bland bruna löv."
+    },
+    {
+      "src": "/images/species/svart-trumpetsvamp-3.jpg",
+      "author": "Albarubescens",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Craterellus_cornucopioides,_Monte_Rocca_Romana.jpg",
+      "width": 960,
+      "height": 714,
+      "alt": "Svart trumpetsvamp sedd ovanifrån med djup, mörk öppning."
+    }
+  ],
+  "stensopp": [
+    {
+      "src": "/images/species/stensopp-1.jpg",
+      "author": "Holger Krisp",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:(Gemeine_Steinpilz)_Boletus_edulis.jpg",
+      "width": 960,
+      "height": 640,
+      "alt": "Två stensoppar med bruna hattar och kraftiga ljusa fötter."
+    },
+    {
+      "src": "/images/species/stensopp-2.jpg",
+      "author": "Bernie",
+      "license": "Public domain",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:AD2009Sep13_Boletus_edulis_01.jpg",
+      "width": 960,
+      "height": 643,
+      "alt": "Stensopp i mossa med tydligt nätmönster på foten."
+    },
+    {
+      "src": "/images/species/stensopp-3.jpg",
+      "author": "Bff",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Boletus_edulis20130728_095.jpg",
+      "width": 960,
+      "height": 1280,
+      "alt": "Stensopp med brun hatt och ljus fot i skogsmark."
+    }
+  ],
+  "blek-taggsvamp": [
+    {
+      "src": "/images/species/blek-taggsvamp-1.jpg",
+      "author": "D J Kelly",
+      "license": "Public domain",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:Hedgehog_fungi2.jpg",
+      "width": 960,
+      "height": 640,
+      "alt": "Blek taggsvamp där taggarna syns under den ljusa hatten."
+    },
+    {
+      "src": "/images/species/blek-taggsvamp-2.jpg",
+      "author": "Holger Krisp",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Semmel-Stoppelpilz_Semmelgelber_Stacheling_Hydnum_repandum.JPG",
+      "width": 960,
+      "height": 640,
+      "alt": "Blek taggsvamp vänd för att visa undersidans täta taggar."
+    },
+    {
+      "src": "/images/species/blek-taggsvamp-3.jpg",
+      "author": "Borch3kawki at Polish Wikipedia",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:Hydnum_repandum_02.jpg",
+      "width": 960,
+      "height": 756,
+      "alt": "Undersidan av blek taggsvamp med taggar och kort ljus fot."
+    }
+  ],
+  "rodgul-trumpetsvamp": [
+    {
+      "src": "/images/species/rodgul-trumpetsvamp-1.jpg",
+      "author": "Pau Cabot",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:Cantharellus_lutescens.jpg",
+      "width": 960,
+      "height": 720,
+      "alt": "Rödgula trumpetsvampar med bruna hattar och orangegula fötter."
+    },
+    {
+      "src": "/images/species/rodgul-trumpetsvamp-2.jpg",
+      "author": "Marko Vainu",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Cantharellus_aurora_Eestis.JPG",
+      "width": 960,
+      "height": 641,
+      "alt": "Rödgula trumpetsvampar med vågiga hattkanter."
+    },
+    {
+      "src": "/images/species/rodgul-trumpetsvamp-3.jpg",
+      "author": "Assar",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Cantharellus_lutescens_euskal_herrian_1.jpg",
+      "width": 960,
+      "height": 1280,
+      "alt": "Rödgula trumpetsvampar som visar ljus, svagt rynkad undersida."
+    }
+  ],
+  "smorsopp": [
+    {
+      "src": "/images/species/smorsopp-1.jpg",
+      "author": "Wilhelm Zimmerling PAR",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Ruhland,_Grenzstra%C3%9Fe_bei_Hausnr._1,_Butterpilz_am_Parkplatzrand,_Entwicklungsreihe,_Herbst,_02.jpg",
+      "width": 960,
+      "height": 272,
+      "alt": "Smörsoppar i olika utvecklingsstadier med ring och gul porundersida."
+    },
+    {
+      "src": "/images/species/smorsopp-2.jpg",
+      "author": "Achim Lammerts (Syntaxys)",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:2025-10-15_D500-1030_Achim-Lammerts_Suillus-luteus.jpg",
+      "width": 960,
+      "height": 640,
+      "alt": "Ung smörsopp med blank brun hatt och mörk ring på foten."
+    },
+    {
+      "src": "/images/species/smorsopp-3.jpg",
+      "author": "Paffka",
+      "license": "Public domain",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:Suillus_luteus.JPG",
+      "width": 960,
+      "height": 720,
+      "alt": "Smörsopp med brun hatt och gul porundersida längs kanten."
+    }
+  ],
+  "farticka": [
+    {
+      "src": "/images/species/farticka-1.jpg",
+      "author": "Holger Krisp",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Schaf-Porling_Albatrellus_ovinus.jpg",
+      "width": 960,
+      "height": 623,
+      "alt": "Ljusa fårtickor i skogen, en vänd för att visa undersidan."
+    },
+    {
+      "src": "/images/species/farticka-2.jpg",
+      "author": "Karelj",
+      "license": "Public domain",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:Albatrellus_ovinus_2.jpg",
+      "width": 960,
+      "height": 926,
+      "alt": "Fårtickor på svamputställning, visade från flera håll."
+    },
+    {
+      "src": "/images/species/farticka-3.jpg",
+      "author": "Jerzy Opioła",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Albatrellus_ovinusT65.1.jpg",
+      "width": 960,
+      "height": 721,
+      "alt": "Två fårtickor med ljusa hattar, den ena tydligt uppsprucken."
+    }
+  ],
+  "rod-flugsvamp": [
+    {
+      "src": "/images/species/rod-flugsvamp-1.jpg",
+      "author": "Onderwijsgek",
+      "license": "CC BY-SA 3.0 nl",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/nl/deed.en",
+      "source": "https://commons.wikimedia.org/wiki/File:Amanita_muscaria_3_vliegenzwammen_op_rij.jpg",
+      "width": 960,
+      "height": 720,
+      "alt": "Röda flugsvampar med vita prickar och ljusa ringar på fötterna."
+    },
+    {
+      "src": "/images/species/rod-flugsvamp-2.jpg",
+      "author": "Holger Krisp",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Fliegenpilz_fly_agaric_Amanita_muscaria.JPG",
+      "width": 960,
+      "height": 640,
+      "alt": "Röda flugsvampar i olika utvecklingsstadier i skogen."
+    },
+    {
+      "src": "/images/species/rod-flugsvamp-3.jpg",
+      "author": "Bernie",
+      "license": "Public domain",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:AD2009Sep20_Amanita_muscaria_02.jpg",
+      "width": 960,
+      "height": 642,
+      "alt": "Ung flugsvamp med orange hatt och ljusa hyllerester."
+    }
+  ],
+  "toppslatskivling": [
+    {
+      "src": "/images/species/toppslatskivling-1.jpg",
+      "author": "Arp",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Psilocybe_semilanceata_6514.jpg",
+      "width": 960,
+      "height": 960,
+      "alt": "Toppslätskivlingar med spetsiga hattar och tunna fötter."
+    },
+    {
+      "src": "/images/species/toppslatskivling-2.jpg",
+      "author": "DimiVeBE Velghe Dimitri",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Psilocybe_semilanceata_group.JPG",
+      "width": 960,
+      "height": 720,
+      "alt": "Toppslätskivlingar i gräs med klockformade hattar."
+    },
+    {
+      "src": "/images/species/toppslatskivling-3.jpg",
+      "author": "Lukas from London, England",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Psilocybe_semilanceata_(44126400265).jpg",
+      "width": 960,
+      "height": 1440,
+      "alt": "Ljus toppslätskivling med spetsig hatt och smal fot."
+    }
+  ]
+}
