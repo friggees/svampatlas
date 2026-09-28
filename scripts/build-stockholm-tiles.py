@@ -1,9 +1,10 @@
 """Publish county habitat as static vector tiles, loaded only for visible map bounds.
 
-Zoom 11 keeps native 10 m footprints. Zoom 7–10 uses conservative overviews:
+Zoom 11 keeps native 10 m footprints. Zoom 6–10 uses conservative overviews:
 only homogeneous blocks survive, so overview aggregation never fills exclusions.
 MVT extent 32768 limits quantization to <0.4 m on the ground at max source zoom.
 """
+import argparse
 import hashlib
 import importlib.util
 import json
@@ -47,6 +48,9 @@ def overview(source, factor):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--refresh-county-overviews', action='store_true', help='Refresh z6–7 without rebuilding detail tiles')
+    args = parser.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     metadata = json.loads((DATA / 'habitat-metadata.json').read_text(encoding='utf-8'))
     if build.digest(DATA / 'habitat.tif') != metadata['sha256']:
@@ -57,10 +61,19 @@ def main():
     eligible = np.array(sorted({code for profile in profiles.values() for code in profile['codes']}))
     tile_counts, total_bytes, total_features = {}, 0, 0
     files = []
+    if args.refresh_county_overviews:
+        previous = json.loads((OUT / 'metadata.json').read_text(encoding='utf-8'))
+        files = json.loads((DATA / 'tile-manifest.json').read_text())
+        replaced = [f for f in files if int(f['path'].split('/')[0]) <= 7]
+        tile_counts = {z: n for z, n in previous['tileCounts'].items() if int(z) > 7}
+        total_bytes = previous['tileBytes'] - sum(f['bytes'] for f in replaced)
+        total_features = previous['tileFeatures'] - sum(len(mapbox_vector_tile.decode((OUT / f['path']).read_bytes())['habitat']['features']) for f in replaced)
+        files = [f for f in files if int(f['path'].split('/')[0]) > 7]
     with rasterio.open(DATA / 'habitat.tif') as native:
-        overview_paths = {factor: overview(native, factor) for factor in (2, 4, 8, 16)}
-    for zoom in range(7, 12):
-        source_path = DATA / 'habitat.tif' if zoom == 11 else overview_paths[2 ** (11-zoom)]
+        factors = (8,) if args.refresh_county_overviews else (2, 4, 8)
+        overview_paths = {factor: overview(native, factor) for factor in factors}
+    for zoom in ([6, 7] if args.refresh_county_overviews else range(6, 12)):
+        source_path = DATA / 'habitat.tif' if zoom == 11 else overview_paths[min(8, 2 ** (11-zoom))]
         tiles = list(mercantile.tiles(*bbox, zooms=zoom))
         tile_counts[zoom] = len(tiles)
         with rasterio.open(source_path) as source:
@@ -105,10 +118,10 @@ def main():
     simple = shape(boundary['features'][0]['geometry']).simplify(.0001, preserve_topology=True)
     build.save(OUT / 'outline.geojson', {'type': 'FeatureCollection', 'features': [
         {'type': 'Feature', 'properties': {}, 'geometry': mapping(simple)}]})
-    build.save(OUT / 'metadata.json', {**metadata, 'bbox': bbox, 'minzoom': 7, 'maxzoom': 11,
+    build.save(OUT / 'metadata.json', {**metadata, 'bbox': bbox, 'minzoom': 6, 'maxzoom': 11,
         'tileCounts': tile_counts, 'tileBytes': total_bytes, 'tileFeatures': total_features,
         'classLabels': json.loads((ROOT / 'data/landcover/metadata.json').read_text(encoding='utf-8'))['classLabels'],
-        'overview': 'Conservative homogeneous 20–160 m blocks; native 10 m footprints from source zoom 11.',
+        'overview': 'Conservative homogeneous 20–80 m blocks; native 10 m footprints from source zoom 11.',
         'osmSnapshot': json.loads((DATA / 'osm-manifest.json').read_text())['snapshot']})
     build.save(DATA / 'tile-manifest.json', files)
     print(json.dumps({'tiles': len(files), 'bytes': total_bytes, 'features': total_features}), flush=True)

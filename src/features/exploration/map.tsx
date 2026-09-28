@@ -44,7 +44,7 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
         instance.addLayer({id:'habitat-best',type:'line',source:'habitat',filter:['==',['get','best'],true],paint:{'line-color':'#174b36','line-width':0.6,'line-opacity':0.65}});
         instance.addLayer({id:'habitat-selected',type:'line',source:'habitat',filter:['==',['get','cellId'],''],paint:{'line-color':'#2462b5','line-width':3}});
         if(countyMode){
-          instance.addSource('county-habitat',{type:'vector',tiles:[`${window.location.origin}/data/stockholm/{z}/{x}/{y}.pbf`],minzoom:7,maxzoom:11,bounds:bbox as [number,number,number,number],attribution:'Habitat: NMD2023 · © OpenStreetMap contributors · SCB · <a href="/om#stockholm">Metod &amp; ODbL</a>'});
+          instance.addSource('county-habitat',{type:'vector',tiles:[`${window.location.origin}/data/stockholm/{z}/{x}/{y}.pbf`],minzoom:6,maxzoom:11,bounds:bbox as [number,number,number,number],attribution:'Habitat: NMD2023 · © OpenStreetMap contributors · SCB · <a href="/om#stockholm">Metod &amp; ODbL</a>'});
           instance.addLayer({id:'county-habitat-fill',type:'fill',source:'county-habitat','source-layer':'habitat',layout:{visibility:'none'},paint:{'fill-color':'#38805a','fill-opacity':0.55}});
           instance.on('sourcedataloading',event=>{if(event.sourceId==='county-habitat')setCountyReady(false);});
           instance.on('sourcedata',event=>{if(event.sourceId==='county-habitat'&&instance.isSourceLoaded('county-habitat'))setCountyReady(true);});
