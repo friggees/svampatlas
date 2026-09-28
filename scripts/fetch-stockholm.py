@@ -121,7 +121,7 @@ def osm():
         else:
             # Large rural/coastal municipalities have very wide bounding boxes.
             # Smaller cached requests avoid a single expensive historical query.
-            if east-west > 1 or north-south > .8:
+            if east-west > 1 or north-south > .8 or code in ('0191', '0192'):
                 elements = {}
                 snapshots = []
                 for x in range(2):
@@ -170,7 +170,8 @@ def fetch_osm_part(path, query):
             save(path, raw)
             return raw
         except (requests.RequestException, ValueError) as error:
-            print(f'OSM request failed: {type(error).__name__}', flush=True)
+            status = getattr(getattr(error, 'response', None), 'status_code', None)
+            print(f'OSM request failed: {type(error).__name__}, HTTP {status}', flush=True)
             if attempt == 2:
                 raise
             time.sleep(20 * (attempt + 1))
