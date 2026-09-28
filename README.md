@@ -6,6 +6,18 @@ Status: **hela Stockholms län är publicerat** med filtrerat markunderlag för 
 
 Produktion: https://svampatlas.vercel.app
 
+## Startsida och registrering
+
+`/` presenterar tjänsten. Kartan finns på `/utforska`; `/konto?mode=signup` öppnar registrering och `/konto` inloggning. Efter inloggning öppnas kartan. Bekräftelse sker på `/auth/confirm`, som verifierar e-posttoken och skapar en cookie-session även på en annan enhet. Ogiltiga eller förbrukade länkar leder till kontosidan med möjlighet att begära nytt mejl.
+
+Produktionsadress för mejl är `https://svampatlas.vercel.app`. `NEXT_PUBLIC_SITE_URL` kan ange annan adress för explicita testmiljöer; Supabases e-postmall använder alltid projektets Site URL för att undvika localhost-länkar. Ändra både Site URL och tillåtna adresser vid domänbyte.
+
+Supabase-konfiguration: `supabase/config.toml`, e-postmall: `supabase/templates/confirmation.html`. Efter att callback-routen publicerats kan `node scripts/configure-auth.mjs --apply` uppdatera och återläsa exakt fyra auth-fält via Management API. Kräver `SUPABASE_ACCESS_TOKEN` i processmiljön; spara aldrig token i Git. Utan `--apply` visas bara vilka fält som behöver ändras. CLI `config push` hanterar inte mallinnehållet i den installerade versionen; använd skriptet för hela ändringen.
+
+**E-postleverans:** egen SMTP saknas vid kontroll 2026-09-28. Supabases standardutskick är begränsat till projektteamets adresser. Publik registrering kräver en ansluten e-postleverantör och verifierad avsändare. Behåll e-postbekräftelse aktiverad. [Supabases SMTP-dokumentation](https://supabase.com/docs/guides/auth/auth-smtp).
+
+`npm run test:auth-browser` testar startsida, registreringsformulär, verklig engångstoken, bekräftelse utan tidigare cookies, session, in-/utloggning, felaktiga länkar och mobilbredder 390/320 px mot lokal produktionsserver på port 3001. `TEST_BASE_URL` väljer publicerad miljö. Tillfälliga konton raderas i testets `finally`. Mejlleverans till en inkorg ingår inte; testlänken skapas med admin-API utan utskick.
+
 ## Starta lokalt
 
 Behåll befintlig `.env.local`. Kör `npm ci` om beroenden saknas, sedan `npm run build` och `node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3001`. Öppna http://127.0.0.1:3001.

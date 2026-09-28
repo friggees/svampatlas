@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./app.css";
 import "./weather.css";
+import "./landing.css";
 
 export const metadata: Metadata = { title: "Svampatlas · Stockholms län", description: "Upptäck, spara och återvänd till dina svampställen." };
 export default function RootLayout({ children }: { children: React.ReactNode }) {

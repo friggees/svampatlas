@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><title>Bekräfta din e-postadress</title></head>
+<body style="font-family:Arial,sans-serif;background:#f8f7f0;color:#263e30;padding:32px">
+  <h1 style="font-family:Georgia,serif">Välkommen till Svampatlas</h1>
+  <p>Bekräfta din e-postadress för att börja spara dina egna svampställen.</p>
+  <p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email" style="display:inline-block;padding:14px 22px;background:#365b43;color:white;border-radius:7px;text-decoration:none">Bekräfta mitt konto</a></p>
+  <p>Länken kan bara användas en gång. Om den har gått ut kan du begära en ny på <a href="{{ .SiteURL }}/konto">kontosidan</a>.</p>
+  <p>Om du inte har registrerat dig kan du ignorera det här mejlet.</p>
+</body></html>

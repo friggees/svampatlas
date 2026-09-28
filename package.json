@@ -16,7 +16,8 @@
     "test:browser": "node --env-file=.env.local scripts/verify-browser.mjs",
     "test:stockholm-browser": "node scripts/verify-stockholm-browser.mjs",
     "test:stockholm-data": "python scripts/verify-stockholm.py",
-    "test:guide-browser": "node scripts/verify-guide-browser.mjs"
+    "test:guide-browser": "node scripts/verify-guide-browser.mjs",
+    "test:auth-browser": "node --env-file=.env.local scripts/verify-auth-browser.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

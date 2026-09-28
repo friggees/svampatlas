@@ -15,4 +15,5 @@ node_modules/
 .next/
 out/
 .vercel/
+supabase/.temp/
 *.tsbuildinfo

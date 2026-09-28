@@ -1,3 +1,15 @@
+# Startsida och auth ? 2026-09-28
+
+Ny leverans: marknadsstartsida p? /, befintlig l?nskarta flyttad till /utforska, tydliga registrerings-/inloggningsvyer och nytt bekr?ftelsefl?de. /auth/confirm verifierar token_hash (?ver flera enheter) eller PKCE-kod, skriver cookies och anv?nder relativ Location f?r att bevara publik host. Ogiltiga/f?rbrukade l?nkar visar ny-bekr?ftelseformul?r. Befintliga komponenter i shadcn ?teranv?nds.
+
+Verifierat lokalt: lint, produktionsbygge/TypeScript, 27 dom?ntester, auth-browsertest p? dator och 390/320 px samt integrationstest f?r privata platser och anv?ndarisolering. Tillf?lliga konton borttagna. Inga ?ndringar i schema eller RLS. Screenshots i ignorerade artifacts/.
+
+Supabase cyyozcmhlewapesojvot hade Site URL http://localhost:3000 och tom redirectlista. Ny exakt konfiguration och svensk token_hash-mall finns i supabase/ och scripts/configure-auth.mjs. Aktivering v?ntar tills callback-routen finns i produktion; publiceringsresultat f?ljer i n?sta uppdatering. E-postbekr?ftelse ska f?rbli aktiverad.
+
+Kvar: egen SMTP saknas (smtp_host null). Standardutskick till?ter endast projektteamets adresser. Anv?ndaren ?r tillfr?gad om leverant?r och avs?ndardom?n. Ingen verklig inkorgsleverans har verifierats; admin-genererad token och formul?r har verifierats. Stoppa inte detta genom att st?nga av e-postbekr?ftelse.
+
+---
+
 # Aktuell status – klart och publicerat 2026-09-28
 
 ## Levererat enligt användarens beställning

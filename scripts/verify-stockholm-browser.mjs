@@ -9,7 +9,7 @@ try{
   page.on('pageerror',error=>errors.push(error.message));
   page.on('request',r=>{if(r.url().endsWith('/api/weather'))weatherRequests++;});
   page.on('response',r=>{if(r.url().endsWith('.pbf')){tiles++;if(!r.ok())tileFailures.push(r.status());}});
-  await page.goto(base);
+  await page.goto(`${base}/utforska`);
   await expect(page.getByRole('combobox',{name:'Område'}).locator('option')).toHaveCount(27);
   const firstTile=page.waitForResponse(r=>r.url().endsWith('.pbf')&&r.ok());
   await page.getByRole('button',{name:'Utforska området',exact:true}).click();

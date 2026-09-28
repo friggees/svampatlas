@@ -12,7 +12,7 @@ try{
  browser=await chromium.launch({headless:true});
  const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const base=process.env.TEST_BASE_URL||'http://127.0.0.1:3000';
- await page.goto(`${base}/konto`);await page.getByLabel('E-postadress').fill(email);await page.getByLabel('Lösenord').fill(password);await page.getByRole('button',{name:'Logga in',exact:true}).click();await page.waitForURL(`${base}/`);
+ await page.goto(`${base}/konto`);await page.getByLabel('E-postadress').fill(email);await page.getByLabel('Lösenord').fill(password);await page.getByRole('button',{name:'Logga in',exact:true}).click();await page.waitForURL(`${base}/utforska`);
  await page.locator('.map-canvas canvas').waitFor();
  await expect.poll(()=>page.locator('.map-canvas').evaluate(e=>e.getBoundingClientRect().height),{message:'Map container must have a visible height'}).toBeGreaterThan(300);
  await expect(page.getByText('Kartan kunde inte laddas helt.',{exact:false})).toHaveCount(0);

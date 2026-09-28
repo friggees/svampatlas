@@ -1,0 +1,11 @@
+project_id = "svampatlas"
+
+# Only declare the auth settings managed by this repository.
+# Preview with: npx supabase config diff --project-ref cyyozcmhlewapesojvot
+[auth]
+site_url = "https://svampatlas.vercel.app"
+additional_redirect_urls = ["https://svampatlas.vercel.app/auth/confirm", "http://localhost:3001/auth/confirm", "http://127.0.0.1:3001/auth/confirm"]
+
+[auth.email.template.confirmation]
+subject = "Bekräfta din e-postadress – Svampatlas"
+content_path = "./supabase/templates/confirmation.html"
