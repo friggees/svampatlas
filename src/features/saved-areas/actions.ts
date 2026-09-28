@@ -8,8 +8,8 @@ import path from 'node:path';
 export async function saveArea(input: unknown) {
   const parsed = savedAreaSchema.safeParse(input);
   if (!parsed.success) return { error:'Kontrollera namn, art och koordinater.' };
-  const boundary = JSON.parse(await readFile(path.join(process.cwd(),'public/data/botkyrka-regso.geojson'),'utf8'));
-  if (!isInPilot(parsed.data, boundary)) return { error:'Välj en plats inom Botkyrkas pilotområde.' };
+  const boundary = JSON.parse(await readFile(path.join(process.cwd(),'public/data/stockholm/boundary.geojson'),'utf8'));
+  if (!isInPilot(parsed.data, boundary)) return { error:'Välj en plats inom Stockholms län.' };
   const client = await createClient();
   const {data:{user}} = await client.auth.getUser();
   if (!user) return { error:'Logga in för att spara din plats.' };

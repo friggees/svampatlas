@@ -16,11 +16,11 @@ try{
  await page.locator('.map-canvas canvas').waitFor();
  await expect.poll(()=>page.locator('.map-canvas').evaluate(e=>e.getBoundingClientRect().height),{message:'Map container must have a visible height'}).toBeGreaterThan(300);
  await expect(page.getByText('Kartan kunde inte laddas helt.',{exact:false})).toHaveCount(0);
- await page.getByLabel('Latitud',{exact:true}).fill('59.198');await page.getByLabel('Longitud',{exact:true}).fill('17.834');await page.getByLabel('Platsens namn').fill('Browserns testglänta');await page.getByLabel('Anteckning').fill('Syntetiskt test, raderas direkt.');await page.getByRole('button',{name:'Spara min plats'}).click();await page.getByText('Platsen är sparad under Mina platser.').waitFor();
- await page.goto(`${base}/sparat`);await page.getByRole('heading',{name:'Browserns testglänta'}).waitFor();assert.ok((await page.getByRole('link',{name:'Vägbeskrivning'}).getAttribute('href')).includes('59.198%2C17.834'));
+ await page.getByLabel('Latitud',{exact:true}).fill('59.444');await page.getByLabel('Longitud',{exact:true}).fill('18.068');await page.getByLabel('Platsens namn').fill('Browserns testglänta');await page.getByLabel('Anteckning').fill('Syntetiskt test, raderas direkt.');await page.getByRole('button',{name:'Spara min plats'}).click();await page.getByText('Platsen är sparad under Mina platser.').waitFor();
+ await page.goto(`${base}/sparat`);await page.getByRole('heading',{name:'Browserns testglänta'}).waitFor();assert.ok((await page.getByRole('link',{name:'Vägbeskrivning'}).getAttribute('href')).includes('59.444%2C18.068'));
  await page.reload();await page.getByRole('heading',{name:'Browserns testglänta'}).waitFor();
  await page.getByRole('button',{name:'Ta bort Browserns testglänta',exact:true}).click();await page.getByRole('button',{name:'Ta bort',exact:true}).click();await page.getByRole('heading',{name:'Din nästa favoritplats väntar'}).waitFor();
- await page.goto(`${base}/`);await page.getByRole('button',{name:'Utforska området'}).click();await page.getByRole('heading',{name:'Kartytor för kantarell'}).waitFor();
+ await page.goto(`${base}/botkyrka`);await page.getByRole('button',{name:'Utforska området'}).click();await page.getByRole('heading',{name:'Kartytor för kantarell'}).waitFor();
  await page.getByRole('heading',{name:'Områden efter väderbetyg'}).waitFor({timeout:25000});
  await expect(page.locator('.weather-ranking li button')).toHaveCount(5);
  await expect(page.locator('.weather-score strong')).toHaveText(/^\d{1,3}$/);
