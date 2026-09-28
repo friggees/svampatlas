@@ -158,6 +158,8 @@ def exclusions():
         raise ValueError('Incomplete OSM municipality coverage')
     urban_path = DATA / 'urban-2023.geojson'
     urban = unary_union([projected(f['geometry']) for f in json.loads(urban_path.read_text(encoding='utf-8'))['features']])
+    urban_parts = parts(urban)
+    urban_tree = STRtree(urban_parts)
     county = projected(json.loads((DATA / 'boundary.geojson').read_text(encoding='utf-8'))['features'][0]['geometry'])
     seen, features, categories, relation_members, quarantined = set(), [], Counter(), [], []
     for entry in manifest['files']:
@@ -178,7 +180,9 @@ def exclusions():
             geom = projected(mapping(make_valid(geom)))
             if not geom.buffer(metres).intersects(county):
                 continue
-            excluded, core_margin = exclusion_geometry(geom, urban, metres)
+            nearby = urban_tree.query(geom.buffer(metres), predicate='intersects')
+            local_urban = unary_union([urban_parts[i] for i in nearby])
+            excluded, core_margin = exclusion_geometry(geom, local_urban, metres)
             excluded = excluded.intersection(county)
             if excluded.is_empty:
                 continue
