@@ -13,7 +13,9 @@
     "predev": "node scripts/copy-map-worker.mjs",
     "prebuild": "node scripts/copy-map-worker.mjs",
     "test:habitat-browser": "node scripts/verify-habitat-browser.mjs",
-    "test:browser": "node --env-file=.env.local scripts/verify-browser.mjs"
+    "test:browser": "node --env-file=.env.local scripts/verify-browser.mjs",
+    "test:stockholm-browser": "node scripts/verify-stockholm-browser.mjs",
+    "test:stockholm-data": "python scripts/verify-stockholm.py"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
