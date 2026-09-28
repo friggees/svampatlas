@@ -10,6 +10,7 @@ const email=`svampatlas-auth-${randomUUID()}@example.com`,password=`Test-${rando
 // Generate a real, unconfirmed signup without sending mail to an external inbox.
 const {data,error}=await admin.auth.admin.generateLink({type:'signup',email,password,options:{redirectTo:'https://svampatlas.vercel.app/auth/confirm'}});
 if(error)throw new Error(`Cannot generate test signup: ${error.code??error.status}`);
+const testUsers=[data.user.id];
 let browser;
 try {
   browser=await chromium.launch({headless:true});
@@ -68,6 +69,20 @@ try {
   await expect(page.locator('.form-status').first()).toContainText('Kontrollera din inkorg');
   await page.getByRole('link',{name:'Logga in',exact:true}).click();
   await expect(page.locator('.form-status').first()).toBeEmpty();
+  // Exercise the actual Supabase-hosted standard confirmation link as well.
+  // Its fragment tokens must be converted to cookies by /auth/callback.
+  const standard=await admin.auth.admin.generateLink({type:'signup',email:`svampatlas-standard-${randomUUID()}@example.com`,password,options:{redirectTo:`${base}/auth/confirm`}});
+  if(standard.error)throw new Error(`Cannot generate standard signup: ${standard.error.code}`);
+  testUsers.push(standard.data.user.id);
+  assert.equal(new URL(standard.data.properties.action_link).searchParams.get('redirect_to'),`${base}/auth/confirm`);
+  await context.clearCookies();
+  await page.goto(standard.data.properties.action_link);
+  await expect(page.getByRole('heading',{name:'Din e-postadress är bekräftad'})).toBeVisible({timeout:15000});
+  assert.equal(new URL(page.url()).hash,'');
+  await page.reload();
+  await expect(page.getByRole('button',{name:'Logga ut'})).toBeVisible();
+  await page.getByRole('button',{name:'Logga ut'}).click();
+  await page.waitForURL(`${base}/`);
   for (const width of [390,320]) {
     await page.setViewportSize({width,height:844});
     for (const route of ['/','/konto?mode=signup','/konto']) {
@@ -77,10 +92,12 @@ try {
     }
   }
   assert.deepEqual(errors,[]);
-  console.log('PASS: landing links, signup UI/submission, unconfirmed login rejected, cross-device confirmation, persistent session, logout/login, replay and invalid link recovery, no open redirect, mobile 390/320px, no browser errors. Email delivery is not exercised by this test.');
+  console.log('PASS: landing links, signup UI/submission, unconfirmed login rejected, token-hash and standard Supabase confirmation links, persistent session, logout/login, replay and invalid link recovery, no open redirect, mobile 390/320px, no browser errors. Email delivery is not exercised by this test.');
 } finally {
   await browser?.close();
-  const {error:cleanup}=await admin.auth.admin.deleteUser(data.user.id);
-  if(cleanup)throw new Error('Test account cleanup failed');
-  console.log('Synthetic auth account removed.');
+  for(const id of testUsers) {
+    const {error:cleanup}=await admin.auth.admin.deleteUser(id);
+    if(cleanup)throw new Error('Test account cleanup failed');
+  }
+  console.log('Synthetic auth accounts removed.');
 }

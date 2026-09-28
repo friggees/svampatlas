@@ -6,6 +6,6 @@ project_id = "svampatlas"
 site_url = "https://svampatlas.vercel.app"
 additional_redirect_urls = ["https://svampatlas.vercel.app/auth/confirm", "http://localhost:3001/auth/confirm", "http://127.0.0.1:3001/auth/confirm"]
 
-[auth.email.template.confirmation]
-subject = "Bekräfta din e-postadress – Svampatlas"
-content_path = "./supabase/templates/confirmation.html"
+# The custom template is applied separately with configure-auth.mjs
+# --with-template after custom SMTP is configured. The free default mail
+# provider rejects template modifications.

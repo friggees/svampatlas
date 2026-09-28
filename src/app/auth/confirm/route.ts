@@ -10,7 +10,8 @@ export async function GET(request:NextRequest) {
   const result=tokenHash && params.get('type')==='email'
     ? await client.auth.verifyOtp({token_hash:tokenHash,type:'email'})
     : code ? await client.auth.exchangeCodeForSession(code) : null;
-  const destination=result && !result.error?'/konto?confirmed=1':'/konto?error=confirmation';
+  const destination=result && !result.error?'/konto?confirmed=1'
+    : !tokenHash && !code?'/auth/callback':'/konto?error=confirmation';
   // A relative Location preserves the browser's public host behind a proxy,
   // including 127.0.0.1 in local tests, so the new session cookie stays valid.
   const response=new NextResponse(null,{status:303,headers:{Location:destination}});

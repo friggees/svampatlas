@@ -1,12 +1,14 @@
-# Startsida och auth ? 2026-09-28
+# Startsida och auth – 2026-09-28
 
-Ny leverans: marknadsstartsida p? /, befintlig l?nskarta flyttad till /utforska, tydliga registrerings-/inloggningsvyer och nytt bekr?ftelsefl?de. /auth/confirm verifierar token_hash (?ver flera enheter) eller PKCE-kod, skriver cookies och anv?nder relativ Location f?r att bevara publik host. Ogiltiga/f?rbrukade l?nkar visar ny-bekr?ftelseformul?r. Befintliga komponenter i shadcn ?teranv?nds.
+Ny leverans: marknadsstartsida på /, befintlig länskarta flyttad till /utforska, tydliga registrerings-/inloggningsvyer och nytt bekräftelseflöde. /auth/confirm verifierar token_hash (över flera enheter) eller PKCE-kod, skriver cookies och använder relativ Location för att bevara publik host. Ogiltiga/förbrukade länkar visar ny-bekräftelseformulär. Befintliga komponenter i shadcn återanvänds.
 
-Verifierat lokalt: lint, produktionsbygge/TypeScript, 27 dom?ntester, auth-browsertest p? dator och 390/320 px samt integrationstest f?r privata platser och anv?ndarisolering. Tillf?lliga konton borttagna. Inga ?ndringar i schema eller RLS. Screenshots i ignorerade artifacts/.
+Verifierat lokalt: lint, produktionsbygge/TypeScript, 27 domäntester, auth-browsertest på dator och 390/320 px samt integrationstest för privata platser och användarisolering. Tillfälliga konton borttagna. Inga ändringar i schema eller RLS. Screenshots i ignorerade artifacts/.
 
-Supabase cyyozcmhlewapesojvot hade Site URL http://localhost:3000 och tom redirectlista. Ny exakt konfiguration och svensk token_hash-mall finns i supabase/ och scripts/configure-auth.mjs. Aktivering v?ntar tills callback-routen finns i produktion; publiceringsresultat f?ljer i n?sta uppdatering. E-postbekr?ftelse ska f?rbli aktiverad.
+Supabase cyyozcmhlewapesojvot hade Site URL http://localhost:3000 och tom redirectlista. Ny exakt konfiguration och svensk token_hash-mall finns i supabase/ och scripts/configure-auth.mjs. Funktionscommit c93ea2b är pushad till main. Site URL och exakt redirectlista är nu ändrade och återlästa via Management API. Första publiceringen är READY och auth-testad i produktion. Standardmallens fragmentlänkar stöds också via /auth/callback och är verifierade lokalt; sista produktionskontroll följer. E-postbekräftelse är fortsatt aktiverad.
 
-Kvar: egen SMTP saknas (smtp_host null). Standardutskick till?ter endast projektteamets adresser. Anv?ndaren ?r tillfr?gad om leverant?r och avs?ndardom?n. Ingen verklig inkorgsleverans har verifierats; admin-genererad token och formul?r har verifierats. Stoppa inte detta genom att st?nga av e-postbekr?ftelse.
+Supabase avvisade malländring med HTTP 400: gratisplan utan egen SMTP tillåter inte ändrade e-postmallar. Standardmallen är bevarad. Den svenska mallen finns förberedd och kan aktiveras med scripts/configure-auth.mjs --with-template --apply efter SMTP-konfigurering. PKCE-länkar i en annan webbläsare saknar verifieringscookie: adressen kan bekräftas men användaren behöver då logga in med lösenord.
+
+Kvar: egen SMTP saknas (smtp_host null). Standardutskick tillåter endast projektteamets adresser. Användaren är tillfrågad om leverantör och avsändardomän. Ingen verklig inkorgsleverans har verifierats; admin-genererad token och formulär har verifierats. Stäng inte av e-postbekräftelse för att kringgå detta.
 
 ---
 
