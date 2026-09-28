@@ -119,19 +119,26 @@ def osm():
             if raw.get('_query') != query:
                 raise ValueError(f'Cache query mismatch: {path}')
         else:
-            for attempt in range(3):
-                try:
-                    response = requests.get(OVERPASS, params={'data': query},
-                        headers={'User-Agent': 'Svampatlas-Stockholm-data-import/1.0'}, timeout=(30, 210))
-                    response.raise_for_status()
-                    raw = response.json()
-                    if raw.get('remark') or not raw.get('elements'):
-                        raise ValueError(f'Incomplete OSM response for {code}: {raw.get("remark")}')
-                    break
-                except (requests.RequestException, ValueError):
-                    if attempt == 2:
-                        raise
-                    time.sleep(20 * (attempt + 1))
+            # Large rural/coastal municipalities have very wide bounding boxes.
+            # Smaller cached requests avoid a single expensive historical query.
+            if east-west > 1 or north-south > .8:
+                elements = {}
+                snapshots = []
+                for x in range(2):
+                    for y in range(2):
+                        left, right = west+(east-west)*x/2, west+(east-west)*(x+1)/2
+                        bottom, top = south+(north-south)*y/2, south+(north-south)*(y+1)/2
+                        part_bounds = f'{bottom-.003},{left-.006},{top+.003},{right+.006}'
+                        part_query = query.replace(f'({bounds})', f'({part_bounds})')
+                        part = fetch_osm_part(DATA / 'osm-parts' / f'{code}-{x}-{y}.json', part_query)
+                        for element in part['elements']:
+                            elements[(element['type'], element['id'])] = element
+                        snapshots.append(part['osm3s'])
+                        print(f'OSM {code}: part {x*2+y+1}/4, {len(part["elements"])} objects', flush=True)
+                raw = {'elements': list(elements.values()), 'osm3s': snapshots[0],
+                       '_parts': 4, '_snapshot': timestamp}
+            else:
+                raw = fetch_osm_part(path, query)
             raw['_query'] = query
             raw['_fetchedAt'] = datetime.now(timezone.utc).isoformat()
             save(path, raw)
@@ -141,6 +148,32 @@ def osm():
         print(f'OSM {index+1}/26: {code}, {len(raw["elements"])} objects', flush=True)
     save(DATA / 'osm-manifest.json', {'source': 'OpenStreetMap / Overpass', 'sourceUrl': OVERPASS,
         'license': 'ODbL-1.0', 'snapshot': timestamp, 'rules': RULES, 'files': manifest})
+
+
+def fetch_osm_part(path, query):
+    if path.exists():
+        raw = json.loads(path.read_text(encoding='utf-8'))
+        if raw.get('_query') != query:
+            raise ValueError(f'Cache query mismatch: {path}')
+        return raw
+    for attempt in range(3):
+        try:
+            print(f'Fetching {path.name}, attempt {attempt+1}/3', flush=True)
+            response = requests.get(OVERPASS, params={'data': query},
+                headers={'User-Agent': 'Svampatlas-Stockholm-data-import/1.0'}, timeout=(30, 210))
+            response.raise_for_status()
+            raw = response.json()
+            if raw.get('remark') or 'elements' not in raw:
+                raise ValueError(f'Incomplete OSM response: {raw.get("remark")}')
+            raw['_query'] = query
+            raw['_fetchedAt'] = datetime.now(timezone.utc).isoformat()
+            save(path, raw)
+            return raw
+        except (requests.RequestException, ValueError) as error:
+            print(f'OSM request failed: {type(error).__name__}', flush=True)
+            if attempt == 2:
+                raise
+            time.sleep(20 * (attempt + 1))
 
 
 if __name__ == '__main__':
