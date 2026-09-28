@@ -21,7 +21,7 @@ OSM är ofullständigt, verklig klippfrekvens och besökstryck är okända, och 
 
 Separat trebandsraster: kvarvarande markklass, bitmask för tio arter och undantagsmask. Artklasser exporteras direkt från appens TypeScript-profiler, utan en separat manuellt duplicerad artlista.
 
-Statiska MVT-karttiles laddas endast för synligt kartutsnitt. Källzoom 11 bevarar ursprungliga 10-metersytor; zoom 7–10 använder homogena block om 160–20 meter. Om ett block innehåller blandade klasser eller en bortfiltrerad pixel utelämnas det i översikten. MVT-koordinater kvantiseras med extent 32768.
+Statiska MVT-karttiles laddas endast för synligt kartutsnitt. Källzoom 11 bevarar ursprungliga 10-metersytor; zoom 6–10 använder homogena block om 80–20 meter. Om ett block innehåller blandade klasser eller en bortfiltrerad pixel utelämnas det i översikten. MVT-koordinater kvantiseras med extent 32768.
 
 Länskartan visar markstöd utan väderbetyg. Botkyrkas fem väderpunkter får inte extrapoleras till länet. Den befintliga fördjupningen med ranking och väder finns kvar på `/botkyrka`. Sparade platser utökas med länsgränskontroll på servern; befintlig användarisolering bevaras.
 
@@ -34,3 +34,9 @@ Länskartan visar markstöd utan väderbetyg. Botkyrkas fem väderpunkter får i
 5. `node scripts/verify-stockholm-browser.mjs` – desktop/mobil, alla arter, kommunval, klick, satellit och felkontroll.
 
 Rådata och raster i `data/stockholm/` är ignorerade av Git och Vercel. Publicerat underlag ligger i `public/data/stockholm/`. Filtrerad härledning delas under ODbL 1.0, ursprungligt NMD är CC0. Leveransstatus och faktiska testresultat ska redovisas i NEXT-CHAT.md och HANDOFF.md.
+
+## Leverans 2026-09-28
+
+Länskartan och därefter bildguiden är pushade och verifierade i produktion. 474 MVT-filer, 230,2 MB okomprimerat, med 60 795 undantagsobjekt och 970,5582 km² undantagna pixlar. Oberoende kontroll passerade samtliga rasterpixlar och 6 240 942 detaljgeometrier. Se `stockholm-verification.json` och senaste HANDOFF.md för testresultat.
+
+Guiden har 30 visuellt granskade, lokalt lagrade Wikimedia-fotografier med individuella fotograf-/licenslänkar och tre källstödda kännetecken per art. Google bildsökning blockerade automatisering; Wikimedia Commons API användes för licensierade original. Bildmanifest med filhashar finns i `public/images/species/SOURCES.json`. Lokalt och publicerat browsertest har kontrollerat samtliga bilder, bildbyte, mobil och tangentbordsstöd.

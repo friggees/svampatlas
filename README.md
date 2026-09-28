@@ -2,7 +2,9 @@
 
 Projektplan för en svensk svamp- och fotoapp med Next.js, Supabase och shadcn/ui.
 
-Status: karta, artkatalog, Supabase-inloggning och privata sparade platser fungerar. **Utforska området** visar nu experimentella artberoende habitatytor från NMD2023 v2.1 tillsammans med 14 dygns väder. Alla tio arter har källstödda ekologiska beskrivningar och öppet deklarerade, ännu inte fältvaliderade markprofiler. Kartan och listan delar bedömning och väderdata; inga procentuella fyndchanser visas. Se NEXT-CHAT.md för verifieringsstatus och kvarvarande arbete.
+Status: **hela Stockholms län är publicerat** med filtrerat markunderlag för tio arter, kommunval, satellit och privata sparade platser. Svampguiden har tre licensierade fotografier och tre kännetecken per art. Länskartan visar experimentellt markstöd, inte fyndsannolikhet. Botkyrkas väderfördjupning finns kvar på `/botkyrka`. Se [NEXT-CHAT.md](NEXT-CHAT.md) för källor, verifiering och begränsningar.
+
+Produktion: https://svampatlas.vercel.app
 
 ## Starta lokalt
 
@@ -41,4 +43,12 @@ Webbdata finns i `public/data/botkyrka-habitat.json`. Återskapa med `python scr
 
 Kartlagda skötta/tätbebyggda miljöer filtreras bort från både ytor och markstöd. Byt till **Satellit** och dölj habitatytorna för en ren Sentinel-2-bild (2024–2025, 10 m/pixel). EOX-tjänsten gäller icke-kommersiell pilot; kommersiell användning kräver licens. Filtrerade data delas under ODbL, original-NMD är CC0.
 
-Reproduktion: `python scripts/fetch-exclusions.py`, sedan `python scripts/build-habitat.py`. Kontroll: `python scripts/verify-habitat-filter.py`. Se [fas 1 och gränsen till fas 2](projektplaner/13-fas1-platsfilter-satellit.md). **Stockholmsregionens datahämtning är inte påbörjad; vi inväntar användarens kontextkontroll.**
+Reproduktion: `python scripts/fetch-exclusions.py`, sedan `python scripts/build-habitat.py`. Kontroll: `python scripts/verify-habitat-filter.py`. Se [fas 1 och gränsen till fas 2](projektplaner/13-fas1-platsfilter-satellit.md). Länsutökningen är genomförd och verifierad enligt [länsplanen](projektplaner/14-stockholms-lan.md).
+
+## Stockholms län och bildguide
+
+Alla 26 kommuner ingår. 60 795 kartlagda anläggnings-/skötselobjekt används i filtret. Extra närhetsbuffertar begränsas till tätorter, så naturmark omkring landsbygdens anläggningar kan finnas kvar. OSM är ofullständigt och verklig klippfrekvens är okänd. Fältvalidering av artprofiler återstår.
+
+Länets 474 statiska MVT-filer ligger i `public/data/stockholm/`. Reproduktion: `fetch-stockholm.py`, `build-stockholm.py`, `build-stockholm-tiles.py`. Kontroll: `npm run test:stockholm-data` och `npm run test:stockholm-browser`. Rådata/raster är lokala och ignorerade; Vercel behöver inte Python.
+
+Fotografierna ligger i `public/images/species/`. `SOURCES.json` anger fotograf, originalkälla, licens, nedladdningsadress och SHA-256 för varje bild. Kännetecknen har separata artkällor. Kontroll: `npm run test:guide-browser`. Bildguiden ersätter inte säker artbestämning.

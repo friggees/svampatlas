@@ -1,27 +1,36 @@
-# Aktuell status – 2026-09-28
+# Aktuell status – klart och publicerat 2026-09-28
 
-## Aktuellt uppdrag (ersätter äldre fasgränser)
-1. Fas 1-verifieringen är klar: hela `test:habitat-browser` passerade mot lokalt produktionsbygge, alla tio arter, kartklick/listval, zoom, satellit, mobil, väderfel/gamla dygn/återförsök, habitatfel/återförsök. Inga page errors. Bilder granskade.
-2. Användaren beställde därefter **hela Stockholms län**, med habitat för alla tio arter och undantag för parker, klippta gräsytor, centrum, stationer, skolor m.m. Extra närhetsbuffertar ska skilja tätort från landsbygd. Regional karta ska pushas och verifieras i Vercel så användaren kan se den från mobilen.
-3. **Efter länspubliceringen:** hämta tre bilder per svamp via Google/bildsökning, kontrollera originalkälla/art/licens, lägg in snyggt i Svampguiden tillsammans med korta kännetecken. Pusha och verifiera Vercel igen. Detta steg är ännu inte påbörjat.
-Användaren har lämnat datorn och senare sagt ”fortsätt”. Ingen ny bekräftelse behövs. Pusha fungerande ändringar före omfattande tester.
+## Levererat enligt användarens beställning
+- Fas 1 i Botkyrka är verifierad, inklusive hela habitatflödet lokalt och i produktion.
+- Startsidan visar nu **hela Stockholms län**, alla 26 kommuner och samtliga tio arters experimentella markprofiler. Kommunväljare, satellit, klickbara ytor och privata sparade platser fungerar även på mobil.
+- Kartlagda parker, skötta gräsytor, skolor, stationer, bostäder, handel och andra definierade anläggningar undantas. Extra avstånd tillämpas inom SCB:s tätorter; omkringliggande natur på landsbygden undantas inte automatiskt. OSM kan inte bevisa verklig klippfrekvens eller fullständig täckning.
+- Svampguiden `/arter` har **tre separata fotografier per art (30 totalt)**, tre kännetecken, kort jämförelse/anmärkning, källänkar, bildväxling, tangentbordsstöd och fotograf/licens för varje bild. Google bildsökning blockerade automatisering med kontrollsida; licensierade original hämtades i stället via Wikimedia Commons. Samtliga bilder granskades visuellt. Inga AI-genererade svampbilder.
+- Kod och data är pushade till main. Länskartan publicerades först, bildguiden därefter. Senaste funktionscommit: `e68e818` (Vercel READY). Efterföljande dokumentations-/testcommit ändrar inte appbeteendet.
+- Produktion: https://svampatlas.vercel.app · guide: https://svampatlas.vercel.app/arter
 
-## Fas 2 just nu
-- SCB-gränser hämtade: alla 26 kommuner/524 RegSO. Tätorter 2023: 229 geometrier.
-- Nationellt NMD återanvänt och länsutdrag klart: 168 154 037 pixlar, fem saknade klassvärden; 36,96 MB `data/stockholm/landcover.tif` (band 1 klass, band 2 länsmask).
-- OSM: 24 kommunuttag klara inklusive Norrtälje. Sigtuna (0191) och Nynäshamn (0192) återstår. Timeout i Overpass; skriptet delar nu även dessa i fyra cachade deluttag. Samma snapshot 2026-09-27T17:41:00Z för samtliga. Återuppta med `python scripts/fetch-stockholm.py --stage osm`.
-- Ett trasigt OSM-bostadsområde, relation 15619708, får uttryckligt dokumenterat konservativt omslutande undantag. Inga andra geometrifel i hittills kontrollerade objekt. `landcover=grass` hämtas som kontext men filtreras inte ensamt; `landuse=grass` filtreras.
-- Alla skript och återanvändbar kartimplementation är pushade. Länsaktivering i startsida, spargräns och apptexter är fortfarande lokala ändringar, eftersom slutliga kartdata inte är klara.
+## Verifierat
+- 27 domäntester, lint, TypeScript och produktionsbygge: PASS.
+- `npm run test:stockholm-data`: PASS för 168 154 037 länspixlar, tio artmasker, 474 kartfiler och alla 6 240 942 detaljgeometrier mot platsfiltret. Tolerans: 1 meter i Web Mercator (<0,55 meter på marken), tillåten restarea <0,01 m². Rapport finns i `projektplaner/stockholm-verification.json` och lokalt i `data/stockholm/verification.json`.
+- `test:stockholm-browser`: PASS lokalt och mot produktion. Alla tio arter, 26 kommunalternativ, oförändrad kartinstans, klickbara ytor, satellit, mobil utan sidledes överflöde, simulerat tilefel/återförsök, inga page errors eller fabricerade länsväderanrop.
+- `test:browser`: PASS för inloggning → spara syntetisk plats inom länet men utanför Botkyrka → återläsning → vägbeskrivning → radering, samt Botkyrkas väderflöde.
+- `test:integration`: PASS för auth, skapa/läsa/radera, anonym nekad åtkomst, användarisolering, förfalskad ägare och ägarbyte. Tillfälliga testkonton borttagna. Ingen schema- eller RLS-ändring.
+- `test:guide-browser`: PASS lokalt och mot produktion. Alla 30 distinkta bilder laddar, tio gallerier/texter, bildväxling, käll-/licenslänkar, mobil, tangentbord och artnavigering. Desktop- och mobilbilder granskade visuellt.
 
-## Fortsätt i ordning
-1. Avsluta OSM-uttag. Manifestet `data/stockholm/osm-manifest.json` skapas endast när alla 26 är klara.
-2. `python scripts/build-stockholm.py --stage exclusions`, därefter `--stage habitat`.
-3. `python scripts/build-stockholm-tiles.py`: publicerar MVT z7–11 och metadata i `public/data/stockholm/`. z11 är native 10m-geometrier; översikter har bara homogena block för att inte fylla igen undantag.
-4. Pusha komplett länsaktivering + data efter snabb byggkontroll. Kör sedan `python scripts/verify-stockholm.py`, npm test/lint/build, `node scripts/verify-stockholm-browser.mjs`, integration/sparflöde och Vercelkontroll. Regional spargräns ändras, inte RLS eller DB-schema.
-5. Länskartan visar ärligt markstöd utan regionala väderbetyg. Botkyrkas oförändrade vädermodell finns på `/botkyrka`. Appens root ska visa länet när data finns.
-6. Därefter bildguiden enligt uppdraget ovan.
+## Data och reproducerbarhet
+- SCB RegSO 2025: 524 delområden, 26 kommuner. Tätorter 2023: 229 geometrier. NMD2023 v2.1: 10 meter, fem saknade klasspixlar lämnas saknade.
+- OSM: samtliga 26 kommunuttag klara, snapshot `2026-09-27T17:41:00Z`. 60 795 unika undantagsobjekt; 9 705 582 pixlar (970,5582 km²) bortfiltrerade. Relation 15619708 har trasig ytterring och en uttryckligen dokumenterad konservativ omslutande undantagsyta.
+- Publicerat MVT: zoom 6–11, 474 tiles, 230 212 781 byte okomprimerat. Endast synligt utsnitt laddas. Översikter använder homogena 80/40/20-metersblock; källzoom 11 har ursprungliga 10-metersytor. Alla source tiles är versionshanterade; rådata/raster i `data/stockholm/` är ignorerade.
+- `fetch-stockholm.py`, `build-stockholm.py`, `build-stockholm-tiles.py` återskapar underlaget. `--refresh-county-overviews` uppdaterar bara zoom 6–7. Första översikten behövde zoom 6; det är rättat. Återförsök skapar om endast länets källa/lager, med bibehållen art/visning, eftersom en vanlig refresh inte återställde misslyckade worker-anrop.
+- Bilder: `public/images/species/`, metadata/filhash/licens i `SOURCES.json`; appdata i `src/features/species/photos.json`, källstödda kännetecken i `guide.ts`. Bilder är Wikimedia-genererade 960px-versioner och visas utan beskärning. Behåll fotograf/licens vid återanvändning.
 
-Projekt: C:/Users/albin/dev/svampatlas. Produktion: https://svampatlas.vercel.app. Vercel project prj_Ra3f5zblOTziayUMbwtJaAult4T5, team_ofmSi6R58ZAqEzb9Mn7n3hdK. Befintlig .env.local bevaras, skriv inte ut hemligheter. Rådata/raster i data/stockholm ignoreras i Git och Vercel. Läs projektplaner/14-stockholms-lan.md. Fältvalidering och ekologisk expertgranskning återstår separat.
+## Kvarvarande begränsningar, inte blockerande leveransarbete
+- Länskartan visar **markstöd**, inte fyndsannolikhet eller länstäckande väderbetyg. Botkyrkas väder/ranking finns på `/botkyrka`.
+- Ekologisk fältvalidering och expertgranskning av markprofiler återstår. Värdträd, markkemi, faktisk gräsklippning och fullständig OSM-täckning saknas. Små habitatytor utelämnas i översikten och syns vid inzoomning.
+- Bildguide och kännetecken är inte tillräckliga för säker artbestämning eller beslut att äta ett fynd.
+- Satellitlagrets tidigare CC BY-NC-SA-villkor gäller fortsatt för den icke-kommersiella piloten.
+- Inget mer arbete återstår i den beställda leveransen. Nästa ändring utgår från användarens återkoppling.
+
+Projekt: C:/Users/albin/dev/svampatlas. Vercel project prj_Ra3f5zblOTziayUMbwtJaAult4T5, team_ofmSi6R58ZAqEzb9Mn7n3hdK. Bevara `.env.local`, skriv aldrig ut hemligheter. Lokal produktionsserver kan köras på port 3001; port 3000 kan tillhöra annat projekt.
 
 ---
 
