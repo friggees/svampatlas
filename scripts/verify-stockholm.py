@@ -5,9 +5,14 @@ from collections import Counter
 from pathlib import Path
 
 import mapbox_vector_tile
+import mercantile
 import numpy as np
 import rasterio
-from shapely.geometry import Point, box
+from shapely.geometry import Point, box, shape, mapping
+from shapely.affinity import affine_transform
+from shapely.ops import unary_union
+from shapely.strtree import STRtree
+from rasterio.warp import transform_geom
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'data/stockholm'
@@ -63,8 +68,15 @@ def main():
     assert excluded_total == meta['excludedPixels'] and missing_total == meta['missingInsideCountyPixels']
     manifest = json.loads((DATA / 'tile-manifest.json').read_text())
     eligible = {code for p in profiles.values() for code in p['codes']}
+    excluded_geojson = json.loads((DATA / 'exclusions-3006.geojson').read_text(encoding='utf-8'))
+    # Independent vector-space check of rendered max-detail footprints against
+    # actual excluded places, rather than trusting the generated raster mask.
+    # 1 Web Mercator metre tolerates <0.55 ground metres of MVT rounding here.
+    excluded_geoms = [shape(transform_geom('EPSG:3006', 'EPSG:3857', f['geometry'])).buffer(-1)
+                      for f in excluded_geojson['features']]
+    excluded_tree = STRtree(excluded_geoms)
     native_features = 0
-    for entry in manifest:
+    for index, entry in enumerate(manifest):
         path = ROOT / 'public/data/stockholm' / entry['path']
         assert build.digest(path) == entry['sha256'], entry['path']
         decoded = mapbox_vector_tile.decode(path.read_bytes())['habitat']
@@ -73,10 +85,21 @@ def main():
             assert feature['properties']['code'] in eligible
         if entry['path'].startswith('11/'):
             native_features += len(decoded['features'])
+            zoom, x, y = entry['path'].removesuffix('.pbf').split('/')
+            left, bottom, right, top = mercantile.xy_bounds(int(x), int(y), int(zoom))
+            candidates = excluded_tree.query(box(left, bottom, right, top), predicate='intersects')
+            if len(candidates):
+                excluded_union = unary_union([excluded_geoms[i] for i in candidates])
+                scale = (right-left)/32768
+                for feature in decoded['features']:
+                    geom = affine_transform(shape(feature['geometry']), [scale, 0, 0, scale, left, bottom])
+                    assert geom.intersection(excluded_union).area < .01, f'Excluded place rendered: {entry["path"]}'
+        if index % 50 == 0:
+            print(f'Verified {index+1}/{len(manifest)} vector tiles', flush=True)
     assert native_features > 0
     report = {'status': 'PASS', 'insidePixels': inspected, 'excludedPixels': excluded_total,
               'missingPixels': missing_total, 'speciesPixels': dict(counts), 'tiles': len(manifest),
-              'nativeTileFeatures': native_features, 'ruralPolicy': 'PASS',
+              'nativeTileFeatures': native_features, 'ruralPolicy': 'PASS', 'vectorExclusionCheck': 'PASS',
               'scope': 'Every raster pixel, tile integrity/class codes, explicit rural/urban policy cases. '
                        'Ecological field validation not performed.'}
     build.save(DATA / 'verification.json', report)
