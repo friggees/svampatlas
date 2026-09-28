@@ -1,10 +1,27 @@
-# Aktuell status – 2026-09-27
+# Aktuell status – 2026-09-28
 
-Fas 1 är tekniskt slutverifierad. `npm run test:habitat-browser` passerade hela flödet mot det befintliga produktionsbygget på port 3001: alla tio arter, listval/kartklick, bevarad kartinstans och zoom, satellit, delad väderhämtning, mobil utan overflow, väderfel/gamla dygn/återförsök, habitatfel/återförsök och metodsida. Inga page errors. Desktop/mobil/satellitbilder granskade. Inga appkorrigeringar behövdes. Tidigare 24 domäntester, lint, bygge och geometrikontroll gäller oförändrad kod.
+## Aktuellt uppdrag (ersätter äldre fasgränser)
+1. Fas 1-verifieringen är klar: hela `test:habitat-browser` passerade mot lokalt produktionsbygge, alla tio arter, kartklick/listval, zoom, satellit, mobil, väderfel/gamla dygn/återförsök, habitatfel/återförsök. Inga page errors. Bilder granskade.
+2. Användaren beställde därefter **hela Stockholms län**, med habitat för alla tio arter och undantag för parker, klippta gräsytor, centrum, stationer, skolor m.m. Extra närhetsbuffertar ska skilja tätort från landsbygd. Regional karta ska pushas och verifieras i Vercel så användaren kan se den från mobilen.
+3. **Efter länspubliceringen:** hämta tre bilder per svamp via Google/bildsökning, kontrollera originalkälla/art/licens, lägg in snyggt i Svampguiden tillsammans med korta kännetecken. Pusha och verifiera Vercel igen. Detta steg är ännu inte påbörjat.
+Användaren har lämnat datorn och senare sagt ”fortsätt”. Ingen ny bekräftelse behövs. Pusha fungerande ändringar före omfattande tester.
 
-Användaren har därefter uttryckligen beställt datahämtning för **hela Stockholms län** för alla tio svampar. Det ersätter tidigare stopp inför fas 2. Parker, skötta gräsytor, centrum, stationer och skolor ska filtreras. Extra närhetsbuffertar ska ta hänsyn till tätort/landsbygd. Fältvalidering och ekologisk expertgranskning återstår separat.
+## Fas 2 just nu
+- SCB-gränser hämtade: alla 26 kommuner/524 RegSO. Tätorter 2023: 229 geometrier.
+- Nationellt NMD återanvänt och länsutdrag klart: 168 154 037 pixlar, fem saknade klassvärden; 36,96 MB `data/stockholm/landcover.tif` (band 1 klass, band 2 länsmask).
+- OSM: 24 kommunuttag klara inklusive Norrtälje. Sigtuna (0191) och Nynäshamn (0192) återstår. Timeout i Overpass; skriptet delar nu även dessa i fyra cachade deluttag. Samma snapshot 2026-09-27T17:41:00Z för samtliga. Återuppta med `python scripts/fetch-stockholm.py --stage osm`.
+- Ett trasigt OSM-bostadsområde, relation 15619708, får uttryckligt dokumenterat konservativt omslutande undantag. Inga andra geometrifel i hittills kontrollerade objekt. `landcover=grass` hämtas som kontext men filtreras inte ensamt; `landuse=grass` filtreras.
+- Alla skript och återanvändbar kartimplementation är pushade. Länsaktivering i startsida, spargräns och apptexter är fortfarande lokala ändringar, eftersom slutliga kartdata inte är klara.
 
-Fas 2 pågår: `scripts/fetch-stockholm.py` hämtar SCB RegSO 2025 för länets 26 kommuner, SCB tätorter 2023 samt cachade OSM-uttag med samma tidpunkt. Nationellt NMD2023 v2.1-raster finns redan i `data/landcover/`. Regionala rådata sparas i ignorerade `data/stockholm/`. Regional karta är ännu inte publicerad. Befintlig Botkyrkaproduktion bevaras medan länsunderlaget tas fram.
+## Fortsätt i ordning
+1. Avsluta OSM-uttag. Manifestet `data/stockholm/osm-manifest.json` skapas endast när alla 26 är klara.
+2. `python scripts/build-stockholm.py --stage exclusions`, därefter `--stage habitat`.
+3. `python scripts/build-stockholm-tiles.py`: publicerar MVT z7–11 och metadata i `public/data/stockholm/`. z11 är native 10m-geometrier; översikter har bara homogena block för att inte fylla igen undantag.
+4. Pusha komplett länsaktivering + data efter snabb byggkontroll. Kör sedan `python scripts/verify-stockholm.py`, npm test/lint/build, `node scripts/verify-stockholm-browser.mjs`, integration/sparflöde och Vercelkontroll. Regional spargräns ändras, inte RLS eller DB-schema.
+5. Länskartan visar ärligt markstöd utan regionala väderbetyg. Botkyrkas oförändrade vädermodell finns på `/botkyrka`. Appens root ska visa länet när data finns.
+6. Därefter bildguiden enligt uppdraget ovan.
+
+Projekt: C:/Users/albin/dev/svampatlas. Produktion: https://svampatlas.vercel.app. Vercel project prj_Ra3f5zblOTziayUMbwtJaAult4T5, team_ofmSi6R58ZAqEzb9Mn7n3hdK. Befintlig .env.local bevaras, skriv inte ut hemligheter. Rådata/raster i data/stockholm ignoreras i Git och Vercel. Läs projektplaner/14-stockholms-lan.md. Fältvalidering och ekologisk expertgranskning återstår separat.
 
 ---
 

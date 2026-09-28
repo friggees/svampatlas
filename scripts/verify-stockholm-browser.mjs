@@ -56,8 +56,18 @@ try{
   await page.screenshot({path:'artifacts/stockholm-mobile.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Mobile overflow');
   assert.ok(tiles>0,'County tiles must load');assert.deepEqual(tileFailures,[]);assert.equal(weatherRequests,0,'No Botkyrka weather extrapolation');
+  await page.route('**/data/stockholm/**/*.pbf',route=>route.fulfill({status:503,body:''}));
+  await page.reload();
+  await page.getByRole('button',{name:'Utforska området',exact:true}).click();
+  await expect(page.getByRole('alert').filter({hasText:'En del av markunderlaget kunde inte laddas'})).toBeVisible({timeout:30000});
+  await page.unroute('**/data/stockholm/**/*.pbf');
+  const recovered=page.waitForResponse(r=>r.url().endsWith('.pbf')&&r.ok());
+  await page.getByRole('button',{name:'Hämta länets markunderlag igen',exact:true}).click();
+  await recovered;
+  await expect(page.getByRole('alert').filter({hasText:'En del av markunderlaget kunde inte laddas'})).toHaveCount(0);
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-habitat-ready','true',{timeout:60000});
   await page.goto(`${base}/om#stockholm`);
   await expect(page.getByRole('heading',{name:'Habitatytor i hela Stockholms län',exact:true})).toBeVisible();
   assert.deepEqual(errors,[]);
-  console.log(`PASS: county tiles (${tiles}), 26 municipalities, all ten species, persistent canvas, clickable habitat, satellite, mobile, no county weather fabrication or page errors.`);
+  console.log(`PASS: county tiles (${tiles}), 26 municipalities, all ten species, persistent canvas, clickable habitat, satellite, mobile, tile error/retry, no county weather fabrication or page errors.`);
 }finally{await browser.close();}
