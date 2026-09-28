@@ -133,7 +133,8 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
   },[loaded,focusBounds]);
   function retryCounty(){
     setCountyError(false);
-    (map.current?.getSource('county-habitat') as maplibregl.VectorTileSource|undefined)?.setTiles([`${window.location.origin}/data/stockholm/{z}/{x}/{y}.pbf`]);
+    setCountyReady(false);
+    map.current?.refreshTiles('county-habitat');
   }
   return <div className="map-container"><div ref={container} className="map-canvas" data-moving="false" data-habitat-ready={sourceReady} data-species={countySpecies} data-region={countyMode?'stockholm':'botkyrka'} data-basemap={satellite?'satellite':'map'} aria-busy={(!!habitat||!!countySpecies)&&!sourceReady} aria-label={`Interaktiv karta över ${countyMode?'Stockholms län':'Botkyrka'}. Välj en punkt genom att klicka, eller använd koordinatformuläret.`}/>
     <div className="map-view-controls"><div role="group" aria-label="Kartbakgrund"><button type="button" aria-pressed={!satellite} onClick={()=>setSatellite(false)}>Karta</button><button type="button" aria-pressed={satellite} onClick={()=>{setSatelliteError(false);setSatellite(true);}}>Satellit</button></div>{habitat||countySpecies?<label><input type="checkbox" checked={showHabitat} onChange={e=>setShowHabitat(e.target.checked)}/> Visa habitatytor</label>:null}</div>

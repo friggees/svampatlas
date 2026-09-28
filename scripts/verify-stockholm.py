@@ -12,6 +12,7 @@ from shapely.geometry import Point, box, shape, mapping
 from shapely.affinity import affine_transform
 from shapely.ops import unary_union
 from shapely.strtree import STRtree
+from shapely.prepared import prep
 from rasterio.warp import transform_geom
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -90,10 +91,11 @@ def main():
             candidates = excluded_tree.query(box(left, bottom, right, top), predicate='intersects')
             if len(candidates):
                 excluded_union = unary_union([excluded_geoms[i] for i in candidates])
+                prepared_exclusions = prep(excluded_union)
                 scale = (right-left)/32768
                 for feature in decoded['features']:
                     geom = affine_transform(shape(feature['geometry']), [scale, 0, 0, scale, left, bottom])
-                    assert geom.intersection(excluded_union).area < .01, f'Excluded place rendered: {entry["path"]}'
+                    assert not prepared_exclusions.intersects(geom) or geom.intersection(excluded_union).area < .01, f'Excluded place rendered: {entry["path"]}'
         if index % 50 == 0:
             print(f'Verified {index+1}/{len(manifest)} vector tiles', flush=True)
     assert native_features > 0
