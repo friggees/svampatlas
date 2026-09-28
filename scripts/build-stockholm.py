@@ -256,6 +256,8 @@ def habitat():
         'profileSourceSha256': digest(ROOT / 'src/features/exploration/habitat-profiles.ts'),
         'resolutionMetres': 10, 'crs': 'EPSG:3006', 'speciesBits': {key: 1 << bit for bit, key in enumerate(profiles)},
         'speciesPixels': species_counts, 'excludedPixels': excluded_count, 'excludedObjects': len(geoms),
+        'excludedCategories': excluded_data['metadata']['categories'],
+        'quarantinedGeometries': excluded_data['metadata']['quarantinedGeometries'],
         'missingInsideCountyPixels': landcover['missingInsideCountyPixels'],
         'license': 'ODbL-1.0 (OSM-derived); original NMD CC0',
         'method': 'Exact 10 m NMD class match using existing ten app profiles, all touched exclusion pixels removed.',
