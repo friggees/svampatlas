@@ -15,7 +15,7 @@ import rasterio
 from rasterio.features import geometry_mask, geometry_window
 from rasterio.warp import transform_geom
 from rasterio.windows import Window, bounds as window_bounds
-from shapely import make_valid
+from shapely import make_valid, prepare
 from shapely.geometry import GeometryCollection, LineString, Point, box, mapping, shape
 from shapely.ops import unary_union, polygonize_full
 from shapely.strtree import STRtree
@@ -148,7 +148,12 @@ def exclusion_geometry(geom, urban, metres):
     # Nodes/lines have no area: use a declared small footprint proxy everywhere.
     core_margin = 0 if geom.geom_type in ('Polygon', 'MultiPolygon') else min(15, metres)
     core = geom.buffer(core_margin) if core_margin else geom
-    return make_valid(unary_union([core, geom.buffer(metres).intersection(urban)])), core_margin
+    if urban.is_empty:
+        return core, core_margin
+    expanded = geom.buffer(metres)
+    if urban.covers(expanded):
+        return expanded, core_margin
+    return make_valid(unary_union([core, expanded.intersection(urban)])), core_margin
 
 
 def exclusions():
@@ -159,8 +164,11 @@ def exclusions():
     urban_path = DATA / 'urban-2023.geojson'
     urban = unary_union([projected(f['geometry']) for f in json.loads(urban_path.read_text(encoding='utf-8'))['features']])
     urban_parts = parts(urban)
+    for geom in urban_parts:
+        prepare(geom)
     urban_tree = STRtree(urban_parts)
     county = projected(json.loads((DATA / 'boundary.geojson').read_text(encoding='utf-8'))['features'][0]['geometry'])
+    prepare(county)
     seen, features, categories, relation_members, quarantined = set(), [], Counter(), [], []
     for entry in manifest['files']:
         path = DATA / entry['file']
@@ -181,9 +189,10 @@ def exclusions():
             if not geom.buffer(metres).intersects(county):
                 continue
             nearby = urban_tree.query(geom.buffer(metres), predicate='intersects')
-            local_urban = unary_union([urban_parts[i] for i in nearby])
+            local_urban = urban_parts[nearby[0]] if len(nearby) == 1 else unary_union([urban_parts[i] for i in nearby])
             excluded, core_margin = exclusion_geometry(geom, local_urban, metres)
-            excluded = excluded.intersection(county)
+            if not county.covers(excluded):
+                excluded = excluded.intersection(county)
             if excluded.is_empty:
                 continue
             if fallback == 'relation-members':
