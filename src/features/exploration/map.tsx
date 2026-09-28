@@ -16,6 +16,7 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
   const countySelect=useRef(onSelectCounty);
   useEffect(()=>{countySelect.current=onSelectCounty;},[onSelectCounty]);
   const [countyReady,setCountyReady]=useState(false);
+  const [countyError,setCountyError]=useState(false);
   const [loaded,setLoaded]=useState(false);
   const [renderedHabitat,setRenderedHabitat]=useState<FeatureCollection|null>(null);
   const sourceReady=countyMode?(!countySpecies||countyReady):renderedHabitat===habitat;
@@ -33,7 +34,7 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
       instance.on('movestart',()=>container.current?.setAttribute('data-moving','true'));
       instance.on('moveend',()=>container.current?.setAttribute('data-moving','false'));
       instance.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
-      instance.on('error',event=>{if('sourceId' in event&&event.sourceId==='satellite')setSatelliteError(true);else setError(true);});
+      instance.on('error',event=>{if('sourceId' in event&&event.sourceId==='satellite')setSatelliteError(true);else if('sourceId' in event&&event.sourceId==='county-habitat')setCountyError(true);else setError(true);});
       instance.on('load',()=>{
         instance.addSource('pilot',{type:'geojson',data:boundary});
         instance.addLayer({id:'pilot-fill',type:'fill',source:'pilot',paint:{'fill-color':'#547356','fill-opacity':0.055}});
@@ -130,8 +131,12 @@ export default function PilotMap({boundary,bbox,point,onSelect,habitat,selectedI
   useEffect(()=>{
     if(loaded&&focusBounds)map.current?.fitBounds([[focusBounds[0],focusBounds[1]],[focusBounds[2],focusBounds[3]]],{padding:30,duration:500});
   },[loaded,focusBounds]);
+  function retryCounty(){
+    setCountyError(false);
+    (map.current?.getSource('county-habitat') as maplibregl.VectorTileSource|undefined)?.setTiles([`${window.location.origin}/data/stockholm/{z}/{x}/{y}.pbf`]);
+  }
   return <div className="map-container"><div ref={container} className="map-canvas" data-moving="false" data-habitat-ready={sourceReady} data-species={countySpecies} data-region={countyMode?'stockholm':'botkyrka'} data-basemap={satellite?'satellite':'map'} aria-busy={(!!habitat||!!countySpecies)&&!sourceReady} aria-label={`Interaktiv karta över ${countyMode?'Stockholms län':'Botkyrka'}. Välj en punkt genom att klicka, eller använd koordinatformuläret.`}/>
     <div className="map-view-controls"><div role="group" aria-label="Kartbakgrund"><button type="button" aria-pressed={!satellite} onClick={()=>setSatellite(false)}>Karta</button><button type="button" aria-pressed={satellite} onClick={()=>{setSatelliteError(false);setSatellite(true);}}>Satellit</button></div>{habitat||countySpecies?<label><input type="checkbox" checked={showHabitat} onChange={e=>setShowHabitat(e.target.checked)}/> Visa habitatytor</label>:null}</div>
-    {error?<div className="map-notice" role="status">Kartan kunde inte laddas helt. Du kan fortfarande ange koordinater i formuläret.</div>:satellite&&satelliteError?<div className="map-notice" role="status">Satellitbilden kunde inte laddas. Välj Karta för vanlig kartbakgrund.</div>:(habitat||countySpecies)&&!sourceReady?<div className="map-notice" role="status">Ritar artens markytor…</div>:null}
+    {countyError?<div className="map-notice" role="alert">En del av markunderlaget kunde inte laddas. <button type="button" onClick={retryCounty}>Hämta länets markunderlag igen</button></div>:error?<div className="map-notice" role="status">Kartan kunde inte laddas helt. Du kan fortfarande ange koordinater i formuläret.</div>:satellite&&satelliteError?<div className="map-notice" role="status">Satellitbilden kunde inte laddas. Välj Karta för vanlig kartbakgrund.</div>:(habitat||countySpecies)&&showHabitat&&!sourceReady?<div className="map-notice" role="status">Ritar artens markytor…</div>:null}
     <div className="map-legend"><span className="legend-line"/> {satellite?'Satellit 2024–2025 · 10 m/pixel · inte live':countyMode?'Stockholms län · markstöd, inte fyndprognos':'Pilotområde · SCB RegSO 2025'}</div></div>;
 }
