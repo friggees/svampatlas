@@ -1,3 +1,23 @@
+# Domänbyte förberett – 2026-09-30
+
+Påbörjat nästa steg enligt planen. Supabase-projekt `cyyozcmhlewapesojvot` verifierat som Svampatlas och ACTIVE_HEALTHY. Domän och e-postleverantör saknas fortfarande i underlaget; fråga skickad till användaren. Ingen produktionskonfiguration ändrad och inget mejl skickat.
+
+`scripts/configure-auth.mjs` stöder nu `--site-url` och en tokenfri, nätverksfri `--preview`. HTTPS-origin valideras, gamla bekräftelseadresser behålls under domänbytet och malländring stoppas om egen SMTP saknas. README beskriver körning och samordning med appens publika adress och config.toml.
+
+Verifierat: syntaxkontroll och lokala kontroller av domän/mallförhandsvisning, ogiltiga adresser och argument. ESLint gav inget resultat och avbröts; lint är inte verifierad. Live authkonfiguration kunde inte läsas eftersom Management API-token saknas i processmiljön och projektets env-fil. Vercels get_project-verktyg gav argumentfel trots angivna parametrar, så aktuella domäner är inte verifierade. Senast dokumenterad SMTP-status är från 2026-09-28, inte en ny livekontroll.
+
+Nästa steg: få vald domän och leverantör, koppla domän och avsändare, konfigurera SMTP och genomföra verkligt inkorgstest. Communityarbetet återstår enligt produktplanen.
+
+---
+
+# Nästa produktsteg dokumenterade – 2026-09-28
+
+Ny plan: [Domän, community, platsdelning och Plus](projektplaner/15-nasta-steg-community-och-premium.md). Användarens nästa prioriteringar är domän och registreringsmejl, därefter vänner, delning av privata platser, publika platser och communityinlägg med bilder. Betalpaket följer senare; 59 kr/månad är en preliminär idé under 100 kr, inte beslutat pris. Tidigare plan för gratisgränser finns kvar och ska samordnas med sociala funktioner.
+
+Endast dokumentation ändrad. Dokumentets innehåll och länkar kontrollerade; inga apptester körda. Öppna beslut: domän, e-postleverantör, betalpris och kvoter. Nästa praktiska steg är domän och egen SMTP med verkligt inkorgstest. Inga tjänster eller funktioner har konfigurerats i detta arbetspass.
+
+---
+
 # Startsida och auth – 2026-09-28
 
 Ny leverans: marknadsstartsida på /, befintlig länskarta flyttad till /utforska, tydliga registrerings-/inloggningsvyer och nytt bekräftelseflöde. /auth/confirm verifierar token_hash (över flera enheter) eller PKCE-kod, skriver cookies och använder relativ Location för att bevara publik host. Ogiltiga/förbrukade länkar visar ny-bekräftelseformulär. Befintliga komponenter i shadcn återanvänds.

@@ -1,23 +1,45 @@
 import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import {parseArgs} from 'node:util';
 
 // Run after /auth/confirm is deployed. Template changes require custom SMTP.
+const {values}=parseArgs({options:{
+  'site-url':{type:'string',default:'https://svampatlas.vercel.app'},
+  'preview':{type:'boolean',default:false},
+  'apply':{type:'boolean',default:false},
+  'with-template':{type:'boolean',default:false},
+}});
+assert.ok(!(values.preview&&values.apply),'--preview cannot be combined with --apply');
+const site=new URL(values['site-url']);
+assert.ok(site.protocol==='https:'&&!site.username&&!site.password&&site.pathname==='/'&&!site.search&&!site.hash,
+  '--site-url must be an HTTPS origin without credentials, path, query or fragment');
 const token=process.env.SUPABASE_ACCESS_TOKEN;
-if(!token)throw new Error('Set SUPABASE_ACCESS_TOKEN securely before running this script.');
 const endpoint='https://api.supabase.com/v1/projects/cyyozcmhlewapesojvot/config/auth';
 const desired={
-  site_url:'https://svampatlas.vercel.app',
-  uri_allow_list:'https://svampatlas.vercel.app/auth/confirm,http://localhost:3001/auth/confirm,http://127.0.0.1:3001/auth/confirm',
+  site_url:site.origin,
+  uri_allow_list:[...new Set([
+    `${site.origin}/auth/confirm`,
+    'https://svampatlas.vercel.app/auth/confirm',
+    'http://localhost:3001/auth/confirm',
+    'http://127.0.0.1:3001/auth/confirm',
+  ])].join(','),
 };
-if(process.argv.includes('--with-template')) {
+if(values['with-template']) {
   desired.mailer_subjects_confirmation='Bekräfta din e-postadress – Svampatlas';
   desired.mailer_templates_confirmation_content=await readFile(new URL('../supabase/templates/confirmation.html',import.meta.url),'utf8');
 }
 const headers={Authorization:`Bearer ${token}`,'Content-Type':'application/json'};
+if(values.preview) {
+  console.log(JSON.stringify({project:'cyyozcmhlewapesojvot',desired},null,2));
+  process.exit(0);
+}
+if(!token)throw new Error('Set SUPABASE_ACCESS_TOKEN securely before running this script, or use --preview offline.');
 const read=await fetch(endpoint,{headers});
 if(!read.ok)throw new Error(`Auth config read failed: ${read.status}`);
 const before=await read.json();
-if(process.argv.includes('--apply')) {
+console.log(JSON.stringify({siteUrl:before.site_url,customSmtpConfigured:!!before.smtp_host,emailConfirmationRequired:before.mailer_autoconfirm===false}));
+if(values.apply) {
+  if(values['with-template'])assert.ok(before.smtp_host,'Configure custom SMTP before applying the email template.');
   const result=await fetch(endpoint,{method:'PATCH',headers,body:JSON.stringify(desired)});
   if(!result.ok) {
     const detail=await result.json().catch(()=>({message:'No error detail'}));

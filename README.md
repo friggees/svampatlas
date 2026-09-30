@@ -18,6 +18,12 @@ Supabase-konfiguration: `supabase/config.toml`, förberedd e-postmall: `supabase
 
 `npm run test:auth-browser` testar startsida, registreringsformulär, verklig engångstoken, bekräftelse utan tidigare cookies, session, in-/utloggning, felaktiga länkar och mobilbredder 390/320 px mot lokal produktionsserver på port 3001. `TEST_BASE_URL` väljer publicerad miljö. Tillfälliga konton raderas i testets `finally`. Mejlleverans till en inkorg ingår inte; testlänken skapas med admin-API utan utskick.
 
+## Förbered domänbyte
+
+`node scripts/configure-auth.mjs --preview --site-url https://DIN-DOMAN` visar föreslagen Supabase-konfiguration utan nätverksanrop eller token. Ange den faktiska domänen när den är vald. Utan `--preview` läser skriptet aktuell konfiguration och visar vilka fält som skulle ändras; endast `--apply` skriver ändringar. `--with-template --apply` kräver att egen SMTP redan är konfigurerad.
+
+Vid domänbytet ska även `NEXT_PUBLIC_SITE_URL` i driftsmiljön och adresserna i `supabase/config.toml` uppdateras. Publicera appen med rätt adress före authändringen. Skriptet behåller Vercel-adressens och lokala testmiljöers bekräftelserutter under övergången. Domän, DNS och SMTP konfigureras separat.
+
 ## Starta lokalt
 
 Behåll befintlig `.env.local`. Kör `npm ci` om beroenden saknas, sedan `npm run build` och `node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3001`. Öppna http://127.0.0.1:3001.
