@@ -6,6 +6,24 @@ Status: **hela Stockholms län är publicerat** med filtrerat markunderlag för 
 
 Produktion: https://svampatlas.vercel.app
 
+## Vänner, platser och community
+
+Profiler skapas frivilligt på `/profil`. Användarnamn, visningsnamn, presentation och profilbild är publika; e-postadressen visas inte. `/vanner` har sökning, vänförfrågningar, accept/avböj, borttagning och blockering. Ingen plats delas automatiskt vid vänskap.
+
+På `/sparat` kan ägaren välja privat, valda accepterade vänner eller publik plats. Publicering kräver en bekräftelse om att namn, anteckningar och exakta koordinater blir synliga. `/platser` visar karta och lista för egna, mottagna och publika platser. En borttagen/blockerad vän förlorar privata delningar; ny vänskap återställer dem inte. Befintliga platser förblir privata.
+
+`/community` visar senaste inläggen först, med text och upp till fyra bilder. JPG, PNG och WebP accepteras, högst 3 MB per bild. Servern avkodar och skriver om bilder med Sharp, tar bort EXIF/GPS och lagrar endast bearbetade JPEG-filer i en privat bucket. Bildrouten kontrollerar RLS vid varje läsning och använder `private, no-store`. Direkt klientuppladdning till bucketen är inte tillåten. `SUPABASE_SECRET_KEY` behövs endast på servern; den finns redan som känslig variabel i Vercels produktion och preview.
+
+Misslyckad bilduppladdning lämnar ett privat utkast som kan fortsättas. Författaren kan redigera text/platskoppling och radera inlägg; bilder läggs till före första publiceringen. En platskoppling är valfri och kan bara väljas bland egna publika platser. När platsen görs privat slutar koordinaterna visas i publika inlägg. Innehåll och profil är publika även om en besökare är blockerad i inloggat läge; blockering återkallar inte redan kopierat material.
+
+Rapporter hanteras på `/moderering`, som kräver `app_metadata.moderator === true` tilldelat av en betrodd administratör. Ingen verklig användare har fått rollen automatiskt. Moderatorn kan dölja ett inlägg och dess bilder eller avsluta en rapport. Författaren kan inte återpublicera ett dolt inlägg. Kommentarer, gilla-markeringar, notiser och betalpaket ingår ännu inte.
+
+Verifiering: `npm run test:community` testar databasens åtkomstregler med ägare, vän, annan användare och utloggad. `npm run test:community-browser` testar hela flödet mot port 3001; sätt `TEST_BASE_URL` för annan miljö. Testet skapar syntetiska konton, verifierar bildmetadata, fel/återförsök, kartmarkörer, mobilbredder och moderering och tar sedan bort konton och bilder. `npm run test:integration` bevarar kontrollen av privata egna platser.
+
+Migreringarna är redan applicerade på `cyyozcmhlewapesojvot`. Filernas versionsnummer är synkade med Supabases migrationshistorik efter jämförelse av SQL-innehållet. Återapplicera dem inte på det befintliga projektet. För en ny miljö används migrationsfilerna i ordning.
+
+Domän och registreringsmejl är uppskjutna enligt användarens instruktion. Plus kräver ännu beslut om pris, kvoter och kommersiella kartvillkor; inga betalningar eller kvoter är aktiverade.
+
 ## Startsida och registrering
 
 `/` presenterar tjänsten. Kartan finns på `/utforska`; `/konto?mode=signup` öppnar registrering och `/konto` inloggning. Efter inloggning öppnas kartan. Bekräftelse sker på `/auth/confirm`, som verifierar e-posttoken och skapar en cookie-session även på en annan enhet. Ogiltiga eller förbrukade länkar leder till kontosidan med möjlighet att begära nytt mejl.
@@ -32,7 +50,7 @@ Kontroller: `npm run lint`, `npm test`, `npm run build`. Integrationstest och br
 
 ## Läsordning
 
-**Ny chatt: börja med [senaste överlämningen](NEXT-CHAT.md).** Där finns senaste beslut, markunderlag, publiceringsstatus och nästa steg. Äldre verifieringshistorik finns i [HANDOFF.md](HANDOFF.md).
+**Ny chatt: börja med [aktuell överlämning](HANDOFF.md).** Senaste status står överst. [NEXT-CHAT.md](NEXT-CHAT.md) innehåller äldre underlag om kartarbetet.
 
 1. [Produkt och omfattning](projektplaner/01-produkt.md)
 2. [Användarflöden och design](projektplaner/02-design.md)

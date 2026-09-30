@@ -8,4 +8,4 @@ export const savedAreaSchema = z.object({
   notes: z.string().trim().max(2000).default(''),
 });
 export type SavedAreaInput = z.infer<typeof savedAreaSchema>;
-export type SavedArea = SavedAreaInput & { id: string; user_id: string; created_at: string };
+export type SavedArea = SavedAreaInput & { id: string; user_id: string; created_at: string; visibility: 'private'|'friends'|'public' };

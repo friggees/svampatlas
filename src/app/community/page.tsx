@@ -1,0 +1,18 @@
+import Link from 'next/link';
+import {Trees,Users,MapPin} from 'lucide-react';
+import {AppShell} from '@/components/app-shell';
+import {Card} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {SocialNav} from '@/features/community/social-nav';
+import {PostEditor} from '@/features/community/post-editor';
+import {PostCard} from '@/features/community/post-card';
+import {getSocialContext,getCommunity} from '@/infrastructure/repositories/community';
+export default async function Community({searchParams}:{searchParams:Promise<{page?:string}>}){
+ const params=await searchParams;const page=Math.min(1000,Math.max(0,Number.parseInt(params.page??'0')||0));
+ const social=await getSocialContext();const feed=await getCommunity(page,social.user?.id);
+ return <AppShell active="community"><div className="content-page social-page"><div className="eyebrow">TILLSAMMANS BLAND TRÄDEN</div><h1>Berättelser från skogen.</h1><p className="page-intro">Dela dagens fynd, hitta nya skogsvänner och inspirera varandra.</p><SocialNav active="feed"/><div className="community-layout"><div className="feed-column">
+ {social.error||feed.error?<Card className="social-empty" role="alert"><h2>Communityn kunde inte hämtas</h2><p>Försök ladda om sidan om en stund.</p></Card>:<>{social.profile?<Card className="composer-card"><h2>En hälsning från din skogstur</h2><PostEditor places={feed.places}/></Card>:<Card className="social-empty"><h2>{social.user?'Vem är du i skogen?':'Det börjar med en liten upptäckt.'}</h2><p>{social.user?'Skapa din profil för att skriva inlägg och hitta vänner.':'Du kan läsa alla publika inlägg. Logga in för att delta.'}</p><Button asChild><Link href={social.user?'/profil':'/konto'}>{social.user?'Skapa profil':'Logga in'}</Link></Button></Card>}
+ {feed.drafts.length>0&&<details className="drafts"><summary>Dina utkast ({feed.drafts.length})</summary>{feed.drafts.map(post=><PostCard key={post.id} post={post} userId={social.user?.id} canParticipate={!!social.profile} places={feed.places}/>)}</details>}
+ <div className="feed-heading"><h2>Senast från communityn</h2><span>Senaste först</span></div>{!feed.posts.length?<Card className="social-empty"><Trees size={35}/><h2>Här finns plats för din berättelse.</h2><p>{page?'Inga fler inlägg på den här sidan.':'Ingen har publicerat något ännu. Dela en bild eller berätta om din senaste skogstur.'}</p></Card>:feed.posts.map(post=><PostCard key={post.id} post={post} userId={social.user?.id} canParticipate={!!social.profile} places={feed.places}/>)}<nav className="social-buttons" aria-label="Fler inlägg">{page>0&&<Button asChild variant="outline"><Link href={`/community?page=${page-1}`}>Nyare inlägg</Link></Button>}{feed.hasMore&&<Button asChild variant="outline"><Link href={`/community?page=${page+1}`}>Äldre inlägg</Link></Button>}</nav></>}
+ </div><aside className="community-aside"><Card className="forest-card"><Trees size={30}/><h2>En gemenskap som får växa.</h2><p>Små fynd och stora upplevelser. Här finns plats för både nybörjare och vana skogsvandrare.</p><Link href="/vanner"><Users size={16}/> Hitta skogsvänner →</Link><Link href="/platser"><MapPin size={16}/> Utforska delade platser →</Link></Card><Card className="community-guidelines"><h2>Fint att tänka på</h2><p>Dela bilder du har rätt att använda. Visa hänsyn till naturen och varandra.</p><p>Dina platser är privata tills du själv väljer att dela dem. Inlägg och profil är publika.</p><p>Bilder och kommentarer ersätter inte säker artbestämning.</p></Card>{social.user?.moderator&&<Link className="social-link" href="/moderering">Hantera rapporter →</Link>}</aside></div></div></AppShell>;
+}

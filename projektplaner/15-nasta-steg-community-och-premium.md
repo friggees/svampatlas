@@ -1,10 +1,10 @@
 # Nästa steg för Svampatlas
 
-Datum: 2026-09-28. Status: planerat arbete, inte implementerade funktioner.
+Uppdaterat 2026-09-30. Profiler, vänner, platsdelning och community är implementerade och verifierade lokalt. Domän och mejl har skjutits upp på användarens begäran. Plus är fortfarande planerat; publiceringsstatus finns i HANDOFF.md.
 
 ## Utgångsläge
 
-Landing page och inloggningsflödet är klara. Kartan, svampguiden och privata sparade platser finns redan. Närmast återstår egen domän och fungerande registreringsmejl via Supabase. Därefter bygger vi vänner, platsdelning och community, följt av ett betalpaket.
+Landing page och inloggningsflödet är klara. Kartan, svampguiden och privata sparade platser finns redan. Vänner, platsdelning och community är nu byggda. Domän och registreringsmejl väntar till sist; betalpaketet kräver fortfarande beslut om pris, kvoter och kartlicens.
 
 ## 1. Domän och registreringsmejl
 
@@ -21,12 +21,12 @@ Enligt senaste överlämningen saknas egen SMTP och verklig inkorgsleverans är 
 
 Målet är att kunna lägga till andra användare som vänner och välja vilka svampplatser man delar med dem.
 
-- [ ] Enkel profil med visningsnamn, unikt användarnamn och valfri profilbild.
-- [ ] Hitta andra via användarnamn och skicka vänförfrågan.
-- [ ] Acceptera eller avböja förfrågningar, visa vänlista och ta bort vänner.
-- [ ] Dela en sparad plats med en eller flera valda vänner.
-- [ ] Visa mottagna platser i kartan och i en lista, med tydlig ägare.
-- [ ] Återkalla delning. En borttagen vän ska förlora åtkomst till privat delat innehåll.
+- [x] Enkel profil med visningsnamn, unikt användarnamn och valfri profilbild.
+- [x] Hitta andra via användarnamn och skicka vänförfrågan.
+- [x] Acceptera eller avböja förfrågningar, visa vänlista och ta bort vänner.
+- [x] Dela en sparad plats med en eller flera valda vänner.
+- [x] Visa mottagna platser i kartan och i en lista, med tydlig ägare.
+- [x] Återkalla delning. En borttagen vän ska förlora åtkomst till privat delat innehåll.
 
 ### Synlighet för platser
 
@@ -36,10 +36,10 @@ Målet är att kunna lägga till andra användare som vänner och välja vilka s
 | Delad med valda vänner | Ägaren och de vänner som uttryckligen valts |
 | Publik | Alla, även besökare utan konto |
 
-- [ ] Gör det möjligt att publicera en plats och senare göra den privat igen.
-- [ ] Visa tydligt före publicering att även koordinaterna blir synliga för alla.
-- [ ] Lägg till ett kartfilter för egna, delade och publika platser.
-- [ ] Låt endast ägaren ändra eller radera originalplatsen.
+- [x] Gör det möjligt att publicera en plats och senare göra den privat igen.
+- [x] Visa tydligt före publicering att även koordinaterna blir synliga för alla.
+- [x] Lägg till ett kartfilter för egna, delade och publika platser.
+- [x] Låt endast ägaren ändra eller radera originalplatsen.
 
 Befintliga platser förblir privata. Vänskap ska inte automatiskt dela alla platser. Åtkomst ska kontrolleras i databasen och för bilder, inte bara genom dolda knappar. Testa med ägare, vald vän, annan användare och utloggad besökare innan delning anses klar. Redan nedladdad information kan inte tas tillbaka.
 
@@ -47,13 +47,13 @@ Befintliga platser förblir privata. Vänskap ska inte automatiskt dela alla pla
 
 Målet är ett gemensamt flöde där användare kan dela svampfynd, utflykter och bilder.
 
-- [ ] Communityflöde med senaste inläggen först.
-- [ ] Skapa inlägg med text och en eller flera bilder.
-- [ ] Visa författare, datum och bilder samt låt författaren redigera eller radera sitt inlägg.
-- [ ] Gör platskoppling valfri. Ett inlägg får aldrig automatiskt offentliggöra en privat eller vän-delad plats.
-- [ ] Begränsa bildstorlek och filtyper samt ta bort GPS-information ur uppladdade bilders metadata.
-- [ ] Lägg till rapportering av innehåll, blockering av användare och enkel moderering.
-- [ ] Testa uppladdning och flöde på mobil, inklusive misslyckade uppladdningar och tomma tillstånd.
+- [x] Communityflöde med senaste inläggen först.
+- [x] Skapa inlägg med text och en eller flera bilder.
+- [x] Visa författare, datum och bilder samt låt författaren redigera eller radera sitt inlägg.
+- [x] Gör platskoppling valfri. Ett inlägg får aldrig automatiskt offentliggöra en privat eller vän-delad plats.
+- [x] Begränsa bildstorlek och filtyper samt ta bort GPS-information ur uppladdade bilders metadata.
+- [x] Lägg till rapportering av innehåll, blockering av användare och enkel moderering.
+- [x] Testa uppladdning och flöde på mobil, inklusive misslyckade uppladdningar och tomma tillstånd.
 
 Första versionen fokuserar på inlägg och bilder. Kommentarer, gilla-markeringar och notiser är möjliga fortsättningar när grundflödet fungerar.
 
@@ -85,7 +85,7 @@ Tanken är att låta communityn växa genom gratis deltagande och ta betalt för
 
 ## Arbetsordning och öppna beslut
 
-1. Färdigställ domän och verklig mejlleverans.
+1. Domän och verklig mejlleverans tas sist enligt användarens instruktion 2026-09-30.
 2. Bygg profiler, vänförfrågningar och privat delning mellan vänner.
 3. Lägg till uttrycklig publicering av platser och kartfilter.
 4. Bygg communityflöde, bildinlägg och grundläggande moderering.

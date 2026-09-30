@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export function SocialNav({active}:{active:string}){return <nav className="social-tabs" aria-label="Communitynavigation">{[{id:'feed',href:'/community',label:'Flödet'},{id:'places',href:'/platser',label:'Delade platser'},{id:'friends',href:'/vanner',label:'Vänner'},{id:'profile',href:'/profil',label:'Min profil'}].map(link=><Link key={link.id} href={link.href} aria-current={active===link.id?'page':undefined}>{link.label}</Link>)}</nav>;}

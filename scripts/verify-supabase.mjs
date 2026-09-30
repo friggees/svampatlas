@@ -23,7 +23,7 @@ try {
   const steal=await a.from('saved_areas').update({user_id:users[1]}).eq('id',id);assert.ok(steal.error);
   const forged=await b.from('saved_areas').insert(input);assert.ok(forged.error);
   const deleteOther=await b.from('saved_areas').delete().eq('id',id).select();assert.deepEqual(deleteOther.data,[]);
-  const anon=createClient(url,key,{auth:{persistSession:false}});const anonRead=await anon.from('saved_areas').select('id');assert.ok(anonRead.error);
+  const anon=createClient(url,key,{auth:{persistSession:false}});const anonRead=await anon.from('saved_areas').select('id').eq('id',id);assert.equal(anonRead.error,null);assert.deepEqual(anonRead.data,[]);
   const removed=await a.from('saved_areas').delete().eq('id',id).select();assert.equal(removed.data.length,1);
   console.log('PASS: auth, create/read/delete, anonymous denial, cross-user isolation, forged owner and owner reassignment.');
 } finally {

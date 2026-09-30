@@ -1,0 +1,68 @@
+import {createClient} from '@supabase/supabase-js';
+import {randomUUID} from 'node:crypto';
+import assert from 'node:assert/strict';
+const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
+const options={auth:{persistSession:false,autoRefreshToken:false}};
+const admin=createClient(url,process.env.SUPABASE_SECRET_KEY,options);
+const anon=createClient(url,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,options);
+const users=[],clients=[];
+const ok=result=>{assert.equal(result.error,null,JSON.stringify(result.error));return result.data;};
+const visible=async(client,table,id)=>(ok(await client.from(table).select('id').eq('id',id))).length;
+try{
+ for(let i=0;i<3;i++){
+  const email=`svampatlas-social-${randomUUID()}@example.com`,password=`Test-${randomUUID()}!`;
+  const {user}=ok(await admin.auth.admin.createUser({email,password,email_confirm:true}));users.push(user.id);
+  const client=createClient(url,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,options);
+  ok(await client.auth.signInWithPassword({email,password}));clients.push(client);
+  ok(await client.from('profiles').insert({id:user.id,username:`test_${randomUUID().replaceAll('-','').slice(0,16)}`,display_name:`Social test ${i}`}));
+ }
+ const [a,b,c]=clients,[aid,bid,cid]=users;
+ assert.ok((await a.from('profiles').update({id:bid}).eq('id',aid)).error);
+ const friendship=ok(await a.from('friendships').insert({requester_id:aid,recipient_id:bid}).select().single());
+ assert.equal(ok(await a.from('friendships').update({status:'accepted'}).eq('id',friendship.id).select()).length,0);
+ assert.ok((await c.from('friendships').insert({requester_id:cid,recipient_id:aid,status:'accepted'})).error);
+ ok(await b.from('friendships').update({status:'accepted'}).eq('id',friendship.id));
+ const area=ok(await a.from('saved_areas').insert({user_id:aid,name:'Synthetic social test',species_id:'kantarell',latitude:59.198,longitude:17.834}).select().single());
+ assert.equal(area.visibility,'private');
+ assert.equal(await visible(b,'saved_areas',area.id),0);assert.equal(await visible(anon,'saved_areas',area.id),0);
+ ok(await a.rpc('set_place_sharing',{place_id:area.id,new_visibility:'friends',friend_ids:[bid]}));
+ assert.equal(await visible(b,'saved_areas',area.id),1);assert.equal(await visible(c,'saved_areas',area.id),0);
+ assert.ok((await b.rpc('set_place_sharing',{place_id:area.id,new_visibility:'public'})).error);
+ assert.equal(ok(await b.from('saved_areas').update({name:'Forbidden'}).eq('id',area.id).select()).length,0);
+ assert.ok((await a.rpc('set_place_sharing',{place_id:area.id,new_visibility:'friends',friend_ids:[cid]})).error);
+ assert.equal(await visible(b,'saved_areas',area.id),1,'failed change rolls back existing share');
+ ok(await b.from('friendships').delete().eq('id',friendship.id));
+ assert.equal(await visible(b,'saved_areas',area.id),0);
+ assert.equal(ok(await a.from('place_shares').select().eq('area_id',area.id)).length,0);
+ const f2=ok(await a.from('friendships').insert({requester_id:aid,recipient_id:bid}).select().single());
+ ok(await b.from('friendships').update({status:'accepted'}).eq('id',f2.id));
+ assert.equal(await visible(b,'saved_areas',area.id),0,'re-friending does not restore old shares');
+ ok(await a.rpc('set_place_sharing',{place_id:area.id,new_visibility:'public'}));
+ assert.equal(await visible(anon,'saved_areas',area.id),1);
+ const post=ok(await a.from('community_posts').insert({author_id:aid,body:'Synthetic post',area_id:area.id}).select().single());
+ assert.equal(await visible(b,'community_posts',post.id),0);
+ ok(await a.from('community_posts').update({status:'published'}).eq('id',post.id));
+ assert.equal(await visible(anon,'community_posts',post.id),1);
+ assert.equal(ok(await b.from('community_posts').update({body:'Forbidden'}).eq('id',post.id).select()).length,0);
+ assert.ok((await a.from('community_posts').update({status:'hidden'}).eq('id',post.id)).error);
+ assert.ok((await a.from('community_images').insert({post_id:post.id,slot:0,path:'forged.jpg'})).error);
+ assert.ok((await a.storage.from('community').upload(`${aid}/raw.jpg`,Buffer.from('raw'),{contentType:'image/jpeg'})).error);
+ ok(await b.from('community_reports').insert({reporter_id:bid,post_id:post.id,reason:'Synthetic report'}));
+ assert.equal(ok(await c.from('community_reports').select()).length,0);
+ ok(await b.from('user_blocks').insert({user_id:bid,blocked_id:aid}));
+ assert.equal(await visible(b,'community_posts',post.id),0);assert.equal(await visible(b,'saved_areas',area.id),0);
+ assert.ok((await a.from('friendships').insert({requester_id:aid,recipient_id:bid})).error);
+ ok(await a.rpc('set_place_sharing',{place_id:area.id,new_visibility:'private'}));
+ assert.equal(await visible(anon,'saved_areas',area.id),0);
+ const linked=ok(await anon.from('community_posts').select('id,saved_areas(id,name,latitude)').eq('id',post.id).single());
+ assert.equal(linked.saved_areas,null,'post cannot leak a place made private');
+ ok(await admin.auth.admin.updateUserById(cid,{app_metadata:{moderator:true}}));
+ ok(await c.auth.refreshSession());
+ ok(await c.from('community_posts').update({status:'hidden'}).eq('id',post.id));
+ assert.equal(await visible(anon,'community_posts',post.id),0);
+ assert.equal(ok(await a.from('community_posts').update({status:'published'}).eq('id',post.id).select()).length,0);
+ console.log('PASS: profiles, friend consent, sharing/rollback/revocation, public/private access, block, drafts, post isolation, image upload restrictions, reports, moderator hiding.');
+}finally{
+ for(const id of users)ok(await admin.auth.admin.deleteUser(id));
+ console.log('Synthetic social accounts removed.');
+}

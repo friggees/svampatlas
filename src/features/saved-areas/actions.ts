@@ -16,6 +16,8 @@ export async function saveArea(input: unknown) {
   const {error} = await client.from('saved_areas').insert({...parsed.data,user_id:user.id});
   if (error) return {error:'Platsen kunde inte sparas. Försök igen.'};
   revalidatePath('/sparat');
+  revalidatePath('/platser');
+  revalidatePath('/community');
   return {success:true};
 }
 export async function deleteArea(id: string) {
@@ -25,5 +27,7 @@ export async function deleteArea(id: string) {
   const {data,error} = await client.from('saved_areas').delete().eq('id',id).eq('user_id',user.id).select('id');
   if (error || !data?.length) return {error:'Platsen kunde inte tas bort.'};
   revalidatePath('/sparat');
+  revalidatePath('/platser');
+  revalidatePath('/community');
   return {success:true};
 }

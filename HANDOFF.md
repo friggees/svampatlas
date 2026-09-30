@@ -1,3 +1,25 @@
+# Community, vänner och platsdelning – 2026-09-30
+
+Användaren bad att återuppta session 01a0e90c-3ede-7da2-8562-9ddab189a849 och fortsätta bygga, med Git-push efter sammanhängande färdiga steg. Domän och mejl ska tas sist. Plus är fortfarande en plan; pris, kvoter och kommersiell satellitlicens är inte beslutade.
+
+Implementerat: `/profil` och `/profil/[username]`, sökning/vänförfrågningar/accept/avböj/borttagning/blockering på `/vanner`, privata/utvalda/publika platsdelningar på `/sparat`, karta/lista med filter på `/platser`, publikt communityflöde med utkast, redigering, radering, bildinlägg och rapportering samt skyddad `/moderering`. Community finns i dator- och mobilnavigationen. Befintlig grafisk form är bevarad.
+
+Databasmigrationen från den avbrutna sessionen var redan applicerad. Projekt `cyyozcmhlewapesojvot` är verifierat som Svampatlas och ACTIVE_HEALTHY. Både initial och social migrationsfil hade lokala tidsstämplar som skilde sig från migrationshistoriken. SQL-innehållet jämfördes via normaliserad MD5 och var identiskt; filerna heter nu `20260927095849_initial_pilot.sql` och `20260930171512_community_and_sharing.sql`. Ingen migration har återapplicerats och ingen verklig användardata har ändrats under återupptagningen.
+
+Bildrouten matchar Origin mot den publika Host/Forwarded-Host och protokoll eftersom Next kan skriva om request.url till intern host. Ett riktigt browserfel hittades och rättades. Bilder bearbetas med direkt, pinnat Sharp-beroende (0.35.4), metadata tas bort och endast JPEG lagras privat. Misslyckad uppladdning går att återuppta utan dubbla bilder. RLS kontrolleras även vid bildläsning. Klienter kan inte skriva råbilder eller sätta avatar_path direkt.
+
+Verifierat lokalt: produktionsbygge/TypeScript, lint, 27 domäntester, databasens sociala integrationstest och befintligt isoleringstest. Det gamla isoleringstestet är uppdaterat: anon får läsa publika platser men får inga rader för den syntetiska privata platsen. Ett första domäntest fick timeout under parallellt bygge; ordinarie omkörning passerade samtliga 27 utan ändrad timeout. Fullt browsertest passerar för profiler och avatar, vänförfrågan, delning, karta/markörer, nekad annan användare, publik bekräftelse, två bilder, avbruten uppladdning/återförsök, privat utkast, EXIF-borttagning, bildåtkomst, ogiltig/stor bild, cross-origin-nekande, redigering/radering, publik profil, återkallad plats, blockering, rapport och moderering. Mobil 390/320 px utan överflöde, inga page errors. Dator-/mobilbilder granskade i ignorerade artifacts/. Alla syntetiska konton och bilder borttagna.
+
+Supabase security advisor: inga schema-/RLS-varningar; befintlig varning om avstängt skydd mot läckta lösenord kvarstår. Ingen authpolicy ändrad. Vercels connector get_project har ett argumentfel; CLI uppdaterade sin befintliga inloggning och REST läste rätt projekt. Nödvändiga tre Supabase-variabler finns som känsliga variabler för produktion och preview. Inga hemligheter skrevs ut eller ändrades.
+
+Publicering: lokal verifiering klar; Git-push och verifiering av den nya produktionsversionen återstår i detta arbetspass. Föregående konfigurationsförberedelser och produktplan är bevarade i commit `0009406`.
+
+Begränsningar: platslistor visar högst 100 senaste platser (en äldre uttryckligen länkad plats kan också inkluderas), flödet har 20 inlägg per sida och utkast/profil visar 20 senaste. Rapportvyn visar 100 öppna rapporter. Ingen verklig moderator har utsetts; tilldela rollen via betrodd administration. Vid misslyckad fysisk bildrensning är kvarvarande objekt otillgängliga och behöver senare rensas. SMTP och inkorgstest är fortsatt uppskjutna; betalpaket och kvoter är inte aktiverade.
+
+Nästa steg efter publiceringskontroll: användarens återkoppling, därefter fastställ Plus-pris/kvoter/kartlicens innan betalimplementation. Domän och mejl tas enligt användarens önskemål sist. Starta inte debitering eller marknadsför planerade funktioner som levererade.
+
+---
+
 # Domänbyte förberett – 2026-09-30
 
 Påbörjat nästa steg enligt planen. Supabase-projekt `cyyozcmhlewapesojvot` verifierat som Svampatlas och ACTIVE_HEALTHY. Domän och e-postleverantör saknas fortfarande i underlaget; fråga skickad till användaren. Ingen produktionskonfiguration ändrad och inget mejl skickat.
@@ -152,7 +174,7 @@ Projektet finns i C:/Users/albin/dev/svampatlas. Appkod och databasschema ÄR im
 - Utforska (/), Mina platser (/sparat), Svampguiden (/arter), Mitt konto (/konto) och källor (/om).
 - Privata sparade platser med koordinater, art, anteckningar och extern vägbeskrivning.
 - MapLibre/OpenStreetMap-karta och pilotgräns från 20 SCB RegSO 2025-områden. Gränsen är inte habitatdata.
-- Migration i supabase/migrations/20260927095815_initial_pilot.sql, redan implementerad mot valt projekt i tidigare session. Applicera inte blint igen.
+- Migration i supabase/migrations/20260927095849_initial_pilot.sql, redan implementerad mot valt projekt i tidigare session. Applicera inte blint igen.
 - Reproducerbara SCB- och SMHI-provuttag i scripts/fetch-pilot.mjs och scripts/fetch-weather-sample.mjs. SMHI-prov från Tullinge med temperatur, luftfuktighet, regn och kvalitetsflaggor i data/weather.
 - Aktiv preliminär väderanalys: src/features/exploration/climate-domain.ts, climate-profiles.ts, weather-panel.tsx och src/infrastructure/weather/. GET /api/weather hämtar DWD ICON via Open-Meteo för fem fasta referensområden. 14 avslutade svenska dygn, temperatur, regn, luftfuktighet och modellerad markfuktighet 3–9 cm. Ingen databasändring behövdes.
 - Den äldre weather-domain.ts är en separat historisk prototyp med syntetiska tester; den används inte av den nya vyn.

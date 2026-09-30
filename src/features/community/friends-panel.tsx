@@ -1,0 +1,16 @@
+'use client';
+import Link from 'next/link';
+import {Card} from '@/components/ui/card';
+import {ActionButton,Avatar} from './primitives';
+import {friendshipAction,blockUser} from './actions';
+import type {Profile,Friendship} from './types';
+export function FriendsPanel({userId,edges,people,results,blocked}:{userId:string;edges:Friendship[];people:Profile[];results:Profile[];blocked:string[]}){
+ const profile=(id:string)=>people.find(p=>p.id===id);
+ const person=(p:Profile)=><Link className="person-identity" href={`/profil/${p.username}`}><Avatar profile={p}/><span><strong>{p.display_name}</strong><small>@{p.username}</small></span></Link>;
+ const incoming=edges.filter(e=>e.status==='pending'&&e.recipient_id===userId),outgoing=edges.filter(e=>e.status==='pending'&&e.requester_id===userId),friends=edges.filter(e=>e.status==='accepted');
+ return <div className="friends-sections">{results.length>0&&<section><h2>Sökresultat</h2>{results.filter(p=>p.id!==userId).map(p=><Card className="person-card" key={p.id}>{person(p)}{blocked.includes(p.id)?<span>Blockerad</span>:edges.some(e=>e.requester_id===p.id||e.recipient_id===p.id)?<span>Finns i din lista nedan</span>:<ActionButton action={()=>friendshipAction('request',p.id)}>Lägg till vän</ActionButton>}</Card>)}</section>}
+ <section><h2>Vänförfrågningar <span className="count-label">{incoming.length}</span></h2>{!incoming.length&&<p className="small-note">Inga nya förfrågningar just nu.</p>}{incoming.map(e=>{const p=profile(e.requester_id);return p&&<Card className="person-card" key={e.id}>{person(p)}<div className="social-buttons"><ActionButton variant="default" action={()=>friendshipAction('accept',e.id)}>Acceptera</ActionButton><ActionButton action={()=>friendshipAction('remove',e.id)}>Avböj</ActionButton></div></Card>;})}</section>
+ <section><h2>Dina vänner <span className="count-label">{friends.length}</span></h2>{!friends.length&&<Card className="social-empty"><h3>Skogen är fin att dela.</h3><p>Sök efter ett användarnamn och skicka din första vänförfrågan.</p></Card>}{friends.map(e=>{const p=profile(e.requester_id===userId?e.recipient_id:e.requester_id);return p&&<Card className="person-card" key={e.id}>{person(p)}<div className="social-buttons"><ActionButton action={()=>friendshipAction('remove',e.id)} confirm={`Ta bort ${p.display_name} som vän?`} description="Era privata platsdelningar återkallas. Ni måste dela platserna på nytt om ni blir vänner igen.">Ta bort vän</ActionButton><ActionButton variant="ghost" action={()=>blockUser(p.id,true)} confirm={`Blockera ${p.display_name}?`} description="Vänskap och privata delningar tas bort. Era inlägg döljs för varandra när ni är inloggade. Publikt innehåll kan fortfarande ses utloggat.">Blockera</ActionButton></div></Card>;})}</section>
+ {outgoing.length>0&&<section><h2>Skickade förfrågningar</h2>{outgoing.map(e=>{const p=profile(e.recipient_id);return p&&<Card className="person-card" key={e.id}>{person(p)}<ActionButton action={()=>friendshipAction('remove',e.id)}>Ångra förfrågan</ActionButton></Card>;})}</section>}
+ {blocked.length>0&&<section><h2>Blockerade användare</h2>{blocked.map(id=>{const p=profile(id);return p&&<Card className="person-card" key={id}>{person(p)}<ActionButton action={()=>blockUser(id,false)}>Häv blockering</ActionButton></Card>;})}</section>}</div>;
+}
